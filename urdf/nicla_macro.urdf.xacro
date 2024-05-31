@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+<xacro:arg name="nicla_camera" default="true"/>
+<xacro:arg name="nicla_tof" default="true"/>
+<xacro:arg name="nicla_tof_visualize" default="true"/>
+<xacro:arg name="nicla_mic" default="true"/>
+<xacro:arg name="nicla_imu" default="true"/> 
+
+<xacro:arg name="use_mesh" default="true"/>
+
+<xacro:property name="NICLA_CAMERA" value="$(arg nicla_camera)" />
+<xacro:property name="NICLA_TOF" value="$(arg nicla_tof)" />
+<xacro:property name="nicla_tof_visualize" value="$(arg nicla_tof_visualize)" />
+<xacro:property name="NICLA_MIC" value="$(arg nicla_mic)" />
+<xacro:property name="NICLA_IMU" value="$(arg nicla_imu)" />
+
+<xacro:property name="USE_MESH" value="$(arg use_mesh)"/>
+
+<xacro:property name="PI_2" value="1.57079632679" />
+<xacro:property name="PI" value="3.14159265359" />
+
+<xacro:macro name="nicla_box" params="name:=nicla parent_link *origin">
+
+    <link name="${name}_base">
+        <visual>
+            <xacro:if value="${USE_MESH}">
+                <origin xyz="-0.01143 -0.01143 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://nicla_vision_ros2/urdf/meshes/niclavision.dae" scale="0.001 0.001 0.001" />
+                    <!-- <mesh filename="package://nicla_vision_ros2/urdf/meshes/niclavision.stl" scale="0.001 0.001 0.001" /> -->
+                </geometry> 
+            </xacro:if>
+            <xacro:unless value="${USE_MESH}">
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.02286  0.02286 0.004"/>
+                </geometry> 
+            </xacro:unless>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.02286  0.02286 0.004"/>
+            </geometry>
+        </collision> 
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.01"/>
+            <inertia ixx="0.01"  ixy="0"  ixz="0" iyy="0.01" iyz="0" izz="0.01" />
+        </inertial>
+    </link>
+  	<joint name="${parent_link}_to_${name}_base" type="fixed">
+    	<xacro:insert_block name="origin"/>
+        <parent link="${parent_link}"/>
+        <child link="${name}_base"/>
+    </joint>
+
+    <xacro:if value="${NICLA_CAMERA}">
+        <link name="${name}_camera"></link>  
+        <joint name="${name}_base_to_camera" type="fixed">
+            <origin xyz="-0.00255 0.00778 0.0045" rpy="0 ${-PI_2} ${PI/2}"/>
+            <parent link="${name}_base"/>
+            <child link="${name}_camera"/>
+        </joint>
+
+        <!-- gazebo simulated camera -->
+        <gazebo reference="${name}_camera">
+        <sensor type="camera" name="${name}_camera">
+        <update_rate>30.0</update_rate>
+        <camera name="${name}_camera">
+            <horizontal_fov>0.69813</horizontal_fov>  <!-- 80deg 1.39626rad-->
+            <image>
+                <width>320</width>
+                <height>240</height>
+                <format>R8G8B8</format>
+            </image>
+            <clip>
+                <near>0.1</near>
+                <far>100</far>
+            </clip>
+            <!-- <lens>
+                <intrinsics>
+                    <fx>439.597550</fx>
+                    <fy>439.597550</fy>
+                    <cx>166.12451</cx>
+                    <cy>104.41054</cy>
+                    <s>0</s>
+                </intrinsics>
+            </lens> -->
+        </camera>
+        <plugin name="gazebo_ros_${name}_camera_controller" filename="libgazebo_ros_camera.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0.0</updateRate>
+            <cameraName>${name}/camera</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>${name}_camera</frameName>
+
+            <!-- Set to 0.0 -->
+            <!-- <hackBaseline>0.0</hackBaseline>  -->
+            <!-- Set to your k1 value -->
+            <!-- <distortionK1>0.176808</distortionK1>  -->
+            <!-- Set to your k2 value -->
+            <!-- <distortionK2>-0.590488</distortionK2>  -->
+            <!-- Set to your k3 value -->
+            <!-- <distortionK3>0.0</distortionK3>  -->
+            <!-- Set to your p1 value -->
+            <!-- <distortionT1>-0.008412</distortionT1>  -->
+            <!-- Set to your p2 value -->
+            <!-- <distortionT2>0.015473</distortionT2>  -->
+            <!-- Set to 0 -->
+            <!-- <CxPrime>166.12451</CxPrime>  -->
+            <!-- Set to your Cx value -->
+            <!-- <Cx>166.12451</Cx>  -->
+            <!-- Set to your Cy value -->
+            <!-- <Cy>104.41054</Cy>  -->
+            <!-- Set to your focal length value--> 
+            <!-- <focalLength>439.597550</focalLength>  -->
+
+        <!-- 
+        Camera matrix K: 
+                        [fx, 0., cx,
+                         0., fy, cy,
+                         0., 0.,  1.] =
+
+        [416.65053,   0.     , 166.12451,
+           0.     , 419.40464, 104.41054,
+           0.     ,   0.     ,   1.     ]
+
+        Note: 
+        - ideally fx == fy
+        - ideally focalLenght = fx = fy
+        - focalLength = fx+fy/2 = 418.027585 
+            but focalLength MUST be img_width/(2.0*(tan(HFOV/2.0))) = 439.597550
+        
+
+        Distortion coefficients D (OpenCV plumb_bob model):
+        [k1,k2,t1,t2,k3]=[0.176808, -0.590488, -0.008412, 0.015473, 0.000000] -->
+  
+        </plugin>
+        </sensor>
+        </gazebo>
+
+    </xacro:if>
+
+    <xacro:if value="${NICLA_TOF}">
+        <link name="${name}_tof"></link>  
+        <joint name="${name}_base_to_tof" type="fixed">
+            <origin xyz="-0.003 0.0032 0.0017" rpy="0 ${-PI_2} 0"/>
+            <parent link="${name}_base"/>
+            <child link="${name}_tof"/>
+        </joint>
+
+        <!-- gazebo simulated tof -->
+        <gazebo reference="${name}_tof">
+        <sensor type="ray" name="${name}_tof">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>${nicla_tof_visualize}</visualize>
+        <update_rate>50</update_rate>
+        <ray>
+            <scan>
+            <horizontal>
+                <samples>1</samples>
+                <resolution>1</resolution>
+                <min_angle>0</min_angle>
+                <max_angle>0</max_angle>
+            </horizontal>
+            </scan>
+            <range>
+            <min>0.04</min>
+            <max>4</max>
+            <resolution>0.03</resolution>
+            </range>
+            <!-- <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.01</stddev>
+            </noise> -->
+        </ray>
+        <plugin name="gazebo_ros_${name}_tof_controller" filename="libgazebo_ros_laser.so">
+            <topicName>${name}/tof</topicName>
+            <frameName>${name}_tof</frameName>
+        </plugin>
+        </sensor>
+        </gazebo>
+    </xacro:if>
+
+    <xacro:if value="${NICLA_MIC}">
+        <link name="${name}_mic"></link>  
+        <joint name="${name}_base_to_mic" type="fixed">
+            <origin xyz="-0.0073 0.0048 0.0013" rpy="0 0 0"/>
+            <parent link="${name}_base"/>
+            <child link="${name}_mic"/>
+        </joint>
+    </xacro:if>
+
+    <xacro:if value="${NICLA_IMU}">
+        <link name="${name}_imu"></link>  
+        <joint name="${name}_base_to_imu" type="fixed">
+            <origin xyz="-0.0078 -0.0046 -0.0015" rpy="0 0 0"/>
+            <parent link="${name}_base"/>
+            <child link="${name}_imu"/>
+        </joint>
+
+        <gazebo reference="${name}_imu">
+            <gravity>true</gravity>
+            <sensor name="${name}_imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>{name}/imu</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>${name}/imu</topicName>
+                <bodyName>${name}_imu</bodyName>
+                <updateRateHZ>833</updateRateHZ>
+                <gaussianNoise>0.0</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>${name}_imu</frameName>
+                <initialOrientationAsReference>false</initialOrientationAsReference>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+            </sensor>
+        </gazebo>
+
+    </xacro:if>
+
+</xacro:macro>
+
+</robot>

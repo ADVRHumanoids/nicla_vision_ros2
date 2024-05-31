@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>nicla_vision_ros2</name>
+  <version>1.0.0</version>
+  <description>
+    The nicla_vision_ros2 package is an integration of the Arduino Nicla Vision board in the ROS2 world. 
+    Sensors data from the Nicla Vision is collected and trasmited to the relevant ROS2 topics
+  </description>
+
+  <maintainer email="toridebraus@gmail.com">Davide Torielli</maintainer>
+  <maintainer email="damiano.gasperini98@gmail.com">Damiano Gasperini</maintainer>  
+
+  <author email="toridebraus@gmail.com">Davide Torielli</author>
+  <author email="damiano.gasperini98@gmail.com">Damiano Gasperini</author>  
+  <author email="delbianco.edoardo@gmail.com">Edoardo Del Bianco</author>
+  <author email="rollo.f96@gmail.com">Federico Rollo</author>
+
+	<license>Apache License 2.0</license>
+
+  <url type="website">http://ros.org/wiki/nicla_vision_ros</url>
+  <url type="repository">https://github.com/ADVRHumanoids/nicla_vision_ros2/</url>
+	<url type="bugtracker">https://github.com/ADVRHumanoids/nicla_vision_ros2/issues/</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <depend>std_msgs</depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>audio_common_msgs</depend>
+  <depend>cv_bridge</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+  
+
+</package>
