@@ -34,7 +34,7 @@ def generate_launch_description():
     pkg_project = get_package_share_directory('nicla_vision_ros2')
 
     #Offical ROS-gazebo bridge repo
-    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
+    pkg_ros_gz_sim = get_package_share_directory('ros_ign_gazebo')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
@@ -44,7 +44,8 @@ def generate_launch_description():
     robot_description_config = xacro.process_file(robot_xacro)
     robot_desc = robot_description_config.toxml()
 
-    #Necessary for tf?
+    print(robot_desc)
+
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -65,12 +66,20 @@ def generate_launch_description():
 
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')),
+            os.path.join(pkg_ros_gz_sim, 'launch', 'ign_gazebo.launch.py')),
     )
+
+    # Spawn robot
+    spawn = Node(package='ros_ign_gazebo', executable='create',
+                 arguments=[
+                    '-name', 'nicla',
+                    '-z', '0.1',
+                    '-topic', '/robot_description'],
+                 output='screen')
 
     # Bridge ROS topics and Gazebo messages for establishing communication
     bridge = Node(
-        package='ros_gz_bridge',
+        package='ros_ign_bridge',
         executable='parameter_bridge',
         parameters=[{
             'config_file': os.path.join(pkg_project, 'config', 'gz_bridge.yaml'),
@@ -85,5 +94,6 @@ def generate_launch_description():
         robot_state_publisher,
         rviz,
         gz_sim,
+        spawn,
         bridge
     ])

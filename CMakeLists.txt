@@ -8,12 +8,16 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+#Commons
 find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(xacro REQUIRED) #to launch nicla_sim
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+#To view images
 find_package(image_transport_plugins REQUIRED)
+#For messages
+find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 
@@ -39,8 +43,10 @@ ament_export_dependencies(rosidl_default_runtime)
 ## Linters ##
 ###########
 
-find_package(ament_lint_auto REQUIRED)
-ament_lint_auto_find_test_dependencies()
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 #############
 ## Install ##
@@ -55,32 +61,24 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY launch/
+install(
+  DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
-  FILES_MATCHING PATTERN "*.launch"
 )
 
-install(DIRECTORY config/
+install(
+  DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/config
-  FILES_MATCHING PATTERN "*.yaml"
 )
 
-install(DIRECTORY config/rviz
-  DESTINATION share/${PROJECT_NAME}/config/rviz
-  FILES_MATCHING PATTERN "*.rviz"
-)
-
-install(DIRECTORY urdf/
+install(
+  DIRECTORY urdf/
   DESTINATION share/${PROJECT_NAME}/urdf
-  FILES_MATCHING PATTERN "*.xacro"
 )
-install(DIRECTORY urdf/meshes
-  DESTINATION share/${PROJECT_NAME}/urdf/meshes
-  FILES_MATCHING PATTERN "*.dae"
-)
-install(DIRECTORY urdf/meshes
-  DESTINATION share/${PROJECT_NAME}/urdf/meshes
-  FILES_MATCHING PATTERN "*.stl"
+
+install(
+  DIRECTORY meshes/
+  DESTINATION share/${PROJECT_NAME}/meshes
 )
 
 ament_package()

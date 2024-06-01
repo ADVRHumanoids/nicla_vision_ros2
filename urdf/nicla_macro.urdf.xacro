@@ -27,8 +27,8 @@
             <xacro:if value="${USE_MESH}">
                 <origin xyz="-0.01143 -0.01143 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://nicla_vision_ros2/urdf/meshes/niclavision.dae" scale="0.001 0.001 0.001" />
-                    <!-- <mesh filename="package://nicla_vision_ros2/urdf/meshes/niclavision.stl" scale="0.001 0.001 0.001" /> -->
+                    <mesh filename="package://nicla_vision_ros2/meshes/niclavision.dae" scale="0.001 0.001 0.001" />
+                    <!-- <mesh filename="package://nicla_vision_ros2/meshes/niclavision.stl" scale="0.001 0.001 0.001" /> -->
                 </geometry> 
             </xacro:if>
             <xacro:unless value="${USE_MESH}">
