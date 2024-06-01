@@ -59,6 +59,21 @@ class NiclaRosPublisher(Node):
         self.enable_audio_stamped = self.get_parameter("enable_audio_stamped").get_parameter_value().bool_value 
         self.enable_imu = self.get_parameter("enable_imu").get_parameter_value().bool_value  
 
+        sensor_string = []
+        if self.enable_range:
+            sensor_string.append("range")
+        if self.enable_camera_raw:
+            sensor_string.append("camera_raw")
+        if self.enable_camera_compressed:
+            sensor_string.append("camera_compressed")
+        if self.enable_audio:
+            sensor_string.append("audio")        
+        if self.enable_audio_stamped:
+            sensor_string.append("audio_stamped")        
+        if self.enable_imu:
+            sensor_string.append("imu")
+
+        self.get_logger().info(f"Initializing at {ip}:{port} with {connection_type} connection with sensors: {sensor_string}")
 
         if self.enable_range:
             range_topic = nicla_name + "/tof" 
@@ -132,10 +147,10 @@ class NiclaRosPublisher(Node):
 
         if connection_type == "udp":
             self.nicla_receiver_server = NiclaReceiverUDP(ip, port, 
-                                                                        enable_range=self.enable_range, 
-                                                                        enable_image=self.enable_camera_raw or self.enable_camera_compressed,
-                                                                        enable_audio=self.enable_audio or self.enable_audio_stamped,
-                                                                        enable_imu=self.enable_imu)
+                                                            enable_range=self.enable_range, 
+                                                            enable_image=self.enable_camera_raw or self.enable_camera_compressed,
+                                                            enable_audio=self.enable_audio or self.enable_audio_stamped,
+                                                            enable_imu=self.enable_imu)
         elif connection_type == "tcp":
             self.nicla_receiver_server = NiclaReceiverTCP(ip, port, 
                                                             enable_range=self.enable_range, 
@@ -151,8 +166,8 @@ class NiclaRosPublisher(Node):
     def run(self):
 
         if self.enable_range and ((range := self.nicla_receiver_server.get_range()) is not None):
+            self.range_msg.header.stamp = Time(seconds=range[0]/1000).to_msg()
 
-            self.range_msg.header.stamp = Time(seconds=range[0]/1000)
             self.range_msg.range = int.from_bytes(range[1], "big")/1000
             self.range_pub.publish(self.range_msg)
 
@@ -162,12 +177,13 @@ class NiclaRosPublisher(Node):
             if (image := self.nicla_receiver_server.get_image()) is not None:
 
                 ##Publish info
-                self.camera_info_msg.header.stamp = Time(seconds=image[0]/1000)  
+                self.camera_info_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()
                 self.camera_info_pub.publish(self.camera_info_msg)
 
                 ### PUBLISH COMPRESSED
                 if self.enable_camera_compressed:
-                    self.image_compressed_msg.header.stamp = Time(seconds=image[0]/1000)  
+                    self.image_compressed_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()  
+
                     self.image_compressed_msg.data = image[1]
                     self.image_compressed_pub.publish(self.image_compressed_msg)
 
@@ -179,7 +195,7 @@ class NiclaRosPublisher(Node):
                     # Decode the compressed image
                     img_raw = cv2.imdecode(nparr, cv2.IMREAD_COLOR) #NOTE: BGR CONVENTION 
 
-                    self.image_raw_msg.header.stamp = Time(seconds=image[0]/1000)   
+                    self.image_raw_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()   
                     self.image_raw_msg.height = img_raw.shape[0]
                     self.image_raw_msg.width = img_raw.shape[1]
                     self.image_raw_msg.encoding = "bgr8"  # Assuming OpenCV returns BGR format
@@ -207,13 +223,13 @@ class NiclaRosPublisher(Node):
                     self.audio_pub.publish(self.audio_msg)
 
                 if self.enable_audio_stamped:
-                    self.audio_stamped_msg.header.stamp = Time(seconds=audio_data[0]/1000)  
+                    self.audio_stamped_msg.header.stamp = Time(seconds=audio_data[0]/1000).to_msg()  
                     self.audio_stamped_msg.audio.data = audio_data[1]
                     self.audio_stamped_pub.publish(self.audio_stamped_msg)
 
         ### IMU DATA
         if self.enable_imu and ((imu := self.nicla_receiver_server.get_imu()) is not None):
-            self.imu_msg.header.stamp = Time(seconds=imu[0]/1000)    
+            self.imu_msg.header.stamp = Time(seconds=imu[0]/1000).to_msg()    
 
             try:
                 acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack('>ffffff', imu[1])
@@ -221,16 +237,12 @@ class NiclaRosPublisher(Node):
                 self.get_logger().error(f"imu pack has {len(imu[1])} bytes")
                 raise e
             
-            self.imu_msg.orientation.x = 0
-            self.imu_msg.orientation.y = 0
-            self.imu_msg.orientation.z = 0
-            self.imu_msg.orientation.w = 1
             self.imu_msg.angular_velocity.x = 0.017453 * gyro_x
             self.imu_msg.angular_velocity.y = 0.017453 * gyro_y
             self.imu_msg.angular_velocity.z = 0.017453 * gyro_z
-            self.imu_msg.linear_acceleration.x = acc_x
-            self.imu_msg.linear_acceleration.y = acc_y
-            self.imu_msg.linear_acceleration.z = acc_z
+            self.imu_msg.linear_acceleration.x = 9.80665 * acc_x
+            self.imu_msg.linear_acceleration.y = 9.80665 * acc_y
+            self.imu_msg.linear_acceleration.z = 9.80665 * acc_z
             self.imu_pub.publish(self.imu_msg)
 
     def stop(self):

@@ -17,9 +17,13 @@ class UDPHandler(socketserver.BaseRequestHandler):
         packet = self.request[0]
         #socket = self.request[1]
         
-        timestamp = int.from_bytes(packet[:4], "big")
-        data_type = packet[4]
-        data = packet[5:]
+        #not used for udp
+        #size_packet = int.from_bytes(packet[:4], "big")    
+ 
+        timestamp = int.from_bytes(packet[4:8], "big")
+        data_type = packet[8]
+        data = packet[9:]
+
         if data_type == RANGE_TYPE:
             if self.server.enable_range:
                 self.server.range_buffer.put_nowait((timestamp, data))

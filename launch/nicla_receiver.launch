@@ -4,12 +4,12 @@
     <arg name="nicla_name" default="nicla" />
     <arg name="receiver_ip"/>
     <arg name="receiver_port" default="8002" />
-    <arg name="connection_type" default="tcp" /> <!-- tcp, udp -->
+    <arg name="connection_type" default="udp" /> <!-- tcp, udp -->
     <arg name="enable_range" default="true" />
     <arg name="enable_camera_raw" default="false" />
     <arg name="enable_camera_compressed" default="true" />
-    <arg name="enable_audio" default="true" />
-    <arg name="enable_audio_stamped" default="false" />
+    <arg name="enable_audio" default="false" />
+    <arg name="enable_audio_stamped" default="true" />
     <arg name="enable_imu" default="true" />
     
     <node name="nicla_receiver" pkg="nicla_vision_ros2" exec="nicla_receiver" output="screen" respawn="false" >
