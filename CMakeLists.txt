@@ -17,6 +17,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 #To view images
 find_package(image_transport_plugins REQUIRED)
+
 #For messages
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -54,7 +55,8 @@ endif()
 #############
 
 # Install Python modules
-ament_python_install_package(${PROJECT_NAME})
+#Renamed because of issue https://github.com/ament/ament_cmake/issues/514
+ament_python_install_package(${PROJECT_NAME}_py)
 
 # Install Python executables
 install(PROGRAMS

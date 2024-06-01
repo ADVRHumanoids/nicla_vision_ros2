@@ -2,7 +2,7 @@
 
 import rclpy
 
-from nicla_vision_ros2 import NiclaRosPublisher
+from nicla_vision_ros2_py import NiclaRosPublisher
 
 
 def main(args=None):
