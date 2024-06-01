@@ -10,6 +10,7 @@ endif()
 
 #Commons
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(xacro REQUIRED) #to launch nicla_sim
 find_package(sensor_msgs REQUIRED)
