@@ -1,2 +1,2 @@
-from nicla_vision_ros2asd.NiclaReceiverServer import NiclaReceiverUDP, NiclaReceiverTCP
-from nicla_vision_ros2asd.NiclaRosPublisher import NiclaRosPublisher
+from nicla_vision_ros2_py.NiclaReceiverServer import NiclaReceiverUDP, NiclaReceiverTCP
+from nicla_vision_ros2_py.NiclaRosPublisher import NiclaRosPublisher
