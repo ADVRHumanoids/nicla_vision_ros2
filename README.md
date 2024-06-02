@@ -43,7 +43,7 @@ Step-by-step instructions on how to get the ROS package running (tested on ROS N
 
 ```bash
 $ cd <your_workpace>/src
-$ git clone https://github.com/ADVRHumanoids/nicla_vision_ros.git
+$ git clone https://github.com/ADVRHumanoids/nicla_vision_ros2.git
 $ cd <your_workpace>
 $ colcon build
 $ source <your_workpace>/devel/setup.bash
