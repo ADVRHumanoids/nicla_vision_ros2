@@ -93,8 +93,7 @@ When you power on your Arduino Nicla Vision, it will automatically connect to th
 
 # Video Demonstration
 
-
-https://github.com/ADVRHumanoids/nicla_vision_ros2/assets/63496571/247952a0-86cb-4514-a034-d8736c8b70ba
+https://github.com/ADVRHumanoids/nicla_vision_ros/assets/26459008/a3eaf921-02ea-4482-80a0-5830a338eb74
 
 <!-- Raw video: https://github.com/ADVRHumanoids/nicla_vision_ros/assets/63496571/699b265c-3f6a-4a9d-8d6c-fccf6bd39227 -->
 
