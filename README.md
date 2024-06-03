@@ -25,8 +25,8 @@ Here a list of the available sensors with their respective ROS topics:
 - **Imu** streams on:
     - `/nicla/imu`
 
-The user can choose if this package should receive the sensors data by UDP or TCP socket connection, providing just an ip address. Moreover, the user can decide which sensor to stream within the ROS environment. 
-In this repository you can find the Python code optimised for receiving the data by the board, and subsequently publishing them through ROS topics.
+The user can easily configure this package, by launch parameters, to receive sensors data via either UDP or TCP socket connections, specifying also the socket IP address. Moreover, the user can decide which sensor to be streamed within the ROS environment. 
+In this repository you can find the Python code optimised for receiving the data by the board, and subsequently publishing it through ROS topics.
 
 ## Table of Contents 
 1. [Installation](#installation)
@@ -55,30 +55,39 @@ We rely on the [audio_common_msgs](https://github.com/ros-drivers/audio_common/t
 **Additional Note:** binary package will be released soon for ROS2!
 
 # Usage 
-Follow the following two steps for enjoying your Arduino Nicla Vision board with ROS.
-### 1. Run the ROS package
-- For receiving sensors data from the board and 
+Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS!
+### 1. Run the ROS2 package
+-  Launch the package:
     ```bash
-    $ ros2 launch nicla_vision_ros2 nicla_receiver.launch receiver_ip:="x.x.x.x" <optional arguments>
+    $ ros2 launch nicla_vision_ros nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp" <optional arguments>
     ```
-    Set the `receiver_ip` with the ip address of your ROS-running machine.
-    You can get it by running the command:
-    ```bash
-    $ ifconfig
-    ```
-    and taking the inet address under the enp voice.
-  
-    Using the `<optional arguments>`, you can decide which sensor to simulate and which socket type, TCP or UDP,  to use (connection_type:="tcp" or "udp").
+    - Set the `receiver_ip` with the IP address of your ROS-running machine.
+        You can get this IP address by executing the following command:
+        ```bash
+        $ ifconfig
+        ```
+        and taking the "inet" address under the "enp" voice.
+    - Set the socket type to be used, either TCP or UDP (`connection_type:="tcp"` or `"udp"`).
+    
+    Furthermore, using the `<optional arguments>`, you can decide:
+    - which sensor to be streamed in ROS
+
+      (e.g. `enable_imu:=true enable_range:=true enable_audio:=true enable_audio_stamped:=false enable_camera_compressed:=true enable_camera_raw:=true`), and
+    - on which socket port (default `receiver_port:=8002`).
+
+    Once you run it, you will be ready for receiving the sensors data transmitted by the board, so now you can move ahead to point **[2. Arduino Nicla Vision setup](#2-arduino-nicla-vision-setup)**. 
     
 - For simulating the Arduino Nicla Vision in Gazebo and Rviz:
      ```bash
-    $ ros2 launch nicla_vision_ros nicla_sim.py <optional arguments>
+    $ ros2 launch nicla_vision_ros nicla_sim.launch <optional arguments>
     ```
-    Using the `<optional arguments>`, you can decide if to run the simulation in gazebo or in rviz, and which sensor to simulate (everything set to true as default). 
+    Using the `<optional arguments>`, you can decide if to run the simulation in Gazebo or in Rviz, and which sensor to simulate (everything set to true as default). 
     
 ### 2. Arduino Nicla Vision setup
-Turn on your Arduino Nicla Vision, after having completed its setup following the steps in the [Nicla Vision Drivers repository](https://github.com/ADVRHumanoids/nicla_vision_drivers.git). 
+After having completed the setup steps in the [Nicla Vision Drivers repository](https://github.com/ADVRHumanoids/nicla_vision_drivers.git), just turn on your Arduino Nicla Vision. 
 When you power on your Arduino Nicla Vision, it will automatically connect to the network and it will start streaming to your ROS-running machine.
+
+**Note:** Look at the LED of your board! The first seconds (about 15 sec) after having turned it on, the LED should be Blue. When the board is correctly connected and it is streaming, the LED will turn off. If you are having connection issues, the LED will be Blue again. If during execution you see a Green LED, it is for unforseen errors. If during execution you see a Red LED, it is for memory errors (usually picture quality too high).
 
 # Video Demonstration
 
