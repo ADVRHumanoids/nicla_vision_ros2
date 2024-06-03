@@ -14,6 +14,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(xacro REQUIRED) #to launch nicla_sim
 find_package(sensor_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 #To view images
 find_package(image_transport_plugins REQUIRED)
@@ -22,8 +23,11 @@ find_package(image_transport_plugins REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
+#Gazebo sim parts
+find_package(ros_gz REQUIRED)
+find_package(gazebo_plugins REQUIRED)
 
-find_package(OpenCV)
+
 
 
 ###########

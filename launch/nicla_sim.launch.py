@@ -32,7 +32,7 @@ def generate_launch_description():
     #External args
     use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='true')
     rviz_arg = DeclareLaunchArgument('rviz', default_value='true')
-    gazebo_arg = DeclareLaunchArgument('gazebo', default_value='false')
+    gazebo_arg = DeclareLaunchArgument('gazebo', default_value='true')
     
     #External args for xacro
     nicla_tof_arg = DeclareLaunchArgument('nicla_tof', default_value='true')
@@ -40,7 +40,7 @@ def generate_launch_description():
     nicla_camera_arg = DeclareLaunchArgument('nicla_camera', default_value='true')
     nicla_mic_arg = DeclareLaunchArgument('nicla_mic', default_value='true')
     nicla_imu_arg= DeclareLaunchArgument('nicla_imu', default_value='true')
-    nicla_use_mesh_arg = DeclareLaunchArgument('nicla_use_mesh', default_value='true')
+    nicla_use_mesh_arg = DeclareLaunchArgument('nicla_use_mesh', default_value='false')
     
     #This project
     pkg_project = get_package_share_directory('nicla_vision_ros2')

@@ -68,19 +68,10 @@
             <child link="${name}_camera"/>
         </joint>
 
-        <!-- gazebo simulated camera -->
         <gazebo reference="${name}_camera">
-        <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system">
-            <render_engine>ogre2</render_engine>
-            <updateRate>0.0</updateRate>
-            <cameraName>${name}/camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>${name}_camera</frameName>
-        </plugin>
-        <sensor name="${name}_camera" type="rgb_camera">
+        <sensor name="${name}_camera" type="camera">
             <camera>
-                <horizontal_fov>439.597550</horizontal_fov>
+                <horizontal_fov>0.69813</horizontal_fov>
                 <image>
                     <width>320</width>
                     <height>240</height>
@@ -126,9 +117,18 @@
             </camera>
             <always_on>1</always_on>
             <update_rate>30</update_rate>
-            <visualize>false</visualize>
+            <visualize>true</visualize>
             <topic>${name}/camera/image_raw</topic>
             <enable_metrics>true</enable_metrics>
+
+        <plugin name="gazebo_ros_${name}_camera" filename="libgazebo_ros_camera.so">
+            <render_engine>ogre2</render_engine>
+            <updateRate>0.0</updateRate>
+            <cameraName>${name}/camera</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>${name}_camera</frameName>
+        </plugin>    
         </sensor>
         </gazebo>
 
@@ -147,30 +147,49 @@
         <sensor type="ray" name="${name}_tof">
         <pose>0 0 0 0 0 0</pose>
         <visualize>${nicla_tof_visualize}</visualize>
+        <always_on>1</always_on>
         <update_rate>50</update_rate>
+        <topic>lidar</topic>
         <ray>
+            <!-- No scan, only range -->
+            <!--
             <scan>
-            <horizontal>
-                <samples>1</samples>
-                <resolution>1</resolution>
-                <min_angle>0</min_angle>
-                <max_angle>0</max_angle>
-            </horizontal>
+                <horizontal>
+                    <samples>0</samples>
+                    <resolution>0</resolution>
+                    <min_angle>0</min_angle>
+                    <max_angle>0</max_angle>
+                </horizontal>               
+                <vertical>
+                    <samples>0</samples>
+                    <resolution>0</resolution>
+                    <min_angle>0.0</min_angle>
+                    <max_angle>0.0</max_angle>
+                </vertical>
             </scan>
+            -->
             <range>
-            <min>0.04</min>
-            <max>4</max>
-            <resolution>0.03</resolution>
+                <min>0.04</min>
+                <max>4</max>
+                <resolution>0.03</resolution>
             </range>
-            <!-- <noise>
+            <!-- 
+            <noise>
                 <type>gaussian</type>
                 <mean>0.0</mean>
                 <stddev>0.01</stddev>
             </noise> -->
         </ray>
-        <plugin name="gazebo_ros_${name}_tof_controller" filename="libgazebo_ros_laser.so">
-            <topicName>${name}/tof</topicName>
+        <plugin name="gazebo_ros_${name}_tof_sensor" filename="libgazebo_ros_ray_sensor.so">
+        <!--<plugin name="ignition::gazebo::systems::Sensors" filename="libignition-gazebo-sensors-system.so">-->
+            <render_engine>ogre2</render_engine>
+            <ros>
+                <namespace>${name}</namespace>
+                <remapping>~/out:=~/tof</remapping>
+            </ros>
+            <output_type>sensor_msgs/Range</output_type>
             <frameName>${name}_tof</frameName>
+            <radiation_type>ultrasound</radiation_type>
         </plugin>
         </sensor>
         </gazebo>
@@ -195,17 +214,17 @@
 
         <gazebo reference="${name}_imu">
             <gravity>true</gravity>
-
             <sensor name="${name}_imu_sensor" type="imu">
                 <always_on>1</always_on>
                 <update_rate>100</update_rate>
                 <visualize>true</visualize>
                 <topic>${name}/imu</topic>
-                <enable_metrics>true</enable_metrics>
+                <enable_metrics>false</enable_metrics>
                 <plugin filename="ignition-gazebo-imu-system" name="gz::sim::systems::Imu">
+                <!-- <plugin name="gazebo_ros_${name}_imu" filename="libgazebo_ros_imu_sensor.so"> -->
                     <topicName>${name}/imu</topicName>
                     <bodyName>${name}_imu</bodyName>
-                    <updateRateHZ>833</updateRateHZ>
+                    <updateRateHZ>100</updateRateHZ> <!--real one can be higher but why stressing the simulation? -->
                     <gaussianNoise>0.0</gaussianNoise>
                     <xyzOffset>0 0 0</xyzOffset>
                     <rpyOffset>0 0 0</rpyOffset>
