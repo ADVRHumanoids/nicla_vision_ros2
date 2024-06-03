@@ -13,7 +13,7 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 
-from nicla_vision_ros2 import NiclaReceiverUDP, NiclaReceiverTCP
+from nicla_vision_ros2_py import NiclaReceiverUDP, NiclaReceiverTCP
 
 
 class NiclaRosPublisher(Node):

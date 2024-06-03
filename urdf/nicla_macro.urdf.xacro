@@ -7,7 +7,7 @@
 <xacro:arg name="nicla_mic" default="true"/>
 <xacro:arg name="nicla_imu" default="true"/> 
 
-<xacro:arg name="use_mesh" default="true"/>
+<xacro:arg name="nicla_use_mesh" default="true"/>
 
 <xacro:property name="NICLA_CAMERA" value="$(arg nicla_camera)" />
 <xacro:property name="NICLA_TOF" value="$(arg nicla_tof)" />
@@ -15,7 +15,7 @@
 <xacro:property name="NICLA_MIC" value="$(arg nicla_mic)" />
 <xacro:property name="NICLA_IMU" value="$(arg nicla_imu)" />
 
-<xacro:property name="USE_MESH" value="$(arg use_mesh)"/>
+<xacro:property name="USE_MESH" value="$(arg nicla_use_mesh)"/>
 
 <xacro:property name="PI_2" value="1.57079632679" />
 <xacro:property name="PI" value="3.14159265359" />
@@ -27,8 +27,12 @@
             <xacro:if value="${USE_MESH}">
                 <origin xyz="-0.01143 -0.01143 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="package://nicla_vision_ros2/meshes/niclavision.dae" scale="0.001 0.001 0.001" />
+                    <mesh filename="file://$(find nicla_vision_ros2)/meshes/niclavision.dae" scale="0.001 0.001 0.001" />
+
+                    <!-- <mesh filename="package://nicla_vision_ros2/meshes/niclavision.dae" scale="0.001 0.001 0.001" /> -->
                     <!-- <mesh filename="package://nicla_vision_ros2/meshes/niclavision.stl" scale="0.001 0.001 0.001" /> -->
+                    <!-- <mesh filename="$(find nicla_vision_ros2)/meshes/niclavision.dae" scale="0.001 0.001 0.001" /> -->
+                    <!-- <mesh filename="$(find nicla_vision_ros2)/meshes/niclavision.stl" scale="0.001 0.001 0.001" /> -->
                 </geometry> 
             </xacro:if>
             <xacro:unless value="${USE_MESH}">
@@ -66,79 +70,65 @@
 
         <!-- gazebo simulated camera -->
         <gazebo reference="${name}_camera">
-        <sensor type="camera" name="${name}_camera">
-        <update_rate>30.0</update_rate>
-        <camera name="${name}_camera">
-            <horizontal_fov>0.69813</horizontal_fov>  <!-- 80deg 1.39626rad-->
-            <image>
-                <width>320</width>
-                <height>240</height>
-                <format>R8G8B8</format>
-            </image>
-            <clip>
-                <near>0.1</near>
-                <far>100</far>
-            </clip>
-            <!-- <lens>
-                <intrinsics>
-                    <fx>439.597550</fx>
-                    <fy>439.597550</fy>
-                    <cx>166.12451</cx>
-                    <cy>104.41054</cy>
-                    <s>0</s>
-                </intrinsics>
-            </lens> -->
-        </camera>
-        <plugin name="gazebo_ros_${name}_camera_controller" filename="libgazebo_ros_camera.so">
-            <alwaysOn>true</alwaysOn>
+        <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system">
+            <render_engine>ogre2</render_engine>
             <updateRate>0.0</updateRate>
             <cameraName>${name}/camera</cameraName>
             <imageTopicName>image_raw</imageTopicName>
             <cameraInfoTopicName>camera_info</cameraInfoTopicName>
             <frameName>${name}_camera</frameName>
-
-            <!-- Set to 0.0 -->
-            <!-- <hackBaseline>0.0</hackBaseline>  -->
-            <!-- Set to your k1 value -->
-            <!-- <distortionK1>0.176808</distortionK1>  -->
-            <!-- Set to your k2 value -->
-            <!-- <distortionK2>-0.590488</distortionK2>  -->
-            <!-- Set to your k3 value -->
-            <!-- <distortionK3>0.0</distortionK3>  -->
-            <!-- Set to your p1 value -->
-            <!-- <distortionT1>-0.008412</distortionT1>  -->
-            <!-- Set to your p2 value -->
-            <!-- <distortionT2>0.015473</distortionT2>  -->
-            <!-- Set to 0 -->
-            <!-- <CxPrime>166.12451</CxPrime>  -->
-            <!-- Set to your Cx value -->
-            <!-- <Cx>166.12451</Cx>  -->
-            <!-- Set to your Cy value -->
-            <!-- <Cy>104.41054</Cy>  -->
-            <!-- Set to your focal length value--> 
-            <!-- <focalLength>439.597550</focalLength>  -->
-
-        <!-- 
-        Camera matrix K: 
-                        [fx, 0., cx,
-                         0., fy, cy,
-                         0., 0.,  1.] =
-
-        [416.65053,   0.     , 166.12451,
-           0.     , 419.40464, 104.41054,
-           0.     ,   0.     ,   1.     ]
-
-        Note: 
-        - ideally fx == fy
-        - ideally focalLenght = fx = fy
-        - focalLength = fx+fy/2 = 418.027585 
-            but focalLength MUST be img_width/(2.0*(tan(HFOV/2.0))) = 439.597550
-        
-
-        Distortion coefficients D (OpenCV plumb_bob model):
-        [k1,k2,t1,t2,k3]=[0.176808, -0.590488, -0.008412, 0.015473, 0.000000] -->
-  
         </plugin>
+        <sensor name="${name}_camera" type="rgb_camera">
+            <camera>
+                <horizontal_fov>439.597550</horizontal_fov>
+                <image>
+                    <width>320</width>
+                    <height>240</height>
+                    <format>RGB_INT8</format>
+                </image>
+                <clip>
+                    <near>0.1</near>
+                    <far>100</far>
+                </clip>
+                <distortion>
+                    <k1>0.176808</k1>
+                    <k2>-0.590488</k2>
+                    <k3>0.0</k3>
+                    <p1>-0.008412</p1>
+                    <p2>0.015473</p2>
+                    <center>0.5 0.5</center>
+                </distortion>
+                <lens>
+                    <intrinsics>
+                        <!-- fx = fy = width / ( 2 * tan (hfov / 2 ) ) -->
+                        <fx>416.65053</fx>
+                        <fy>419.40464</fy>
+                        <!-- cx = ( width + 1 ) / 2 -->
+                        <cx>166.12451</cx>
+                        <!-- cy = ( height + 1 ) / 2 -->
+                        <cy>104.41054</cy>
+                        <s>0</s>
+                    </intrinsics>
+                    <projection>
+                        <p_fx>421.37357</p_fx>
+                        <p_fy>426.43881</p_fy>
+                        <p_cx>160.5</p_cx>
+                        <p_cy>120.5</p_cy>
+                        <tx>0</tx>
+                        <ty>0</ty>
+                    </projection>
+                </lens>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0</mean>
+                    <stddev>0.0</stddev>
+                </noise>
+            </camera>
+            <always_on>1</always_on>
+            <update_rate>30</update_rate>
+            <visualize>false</visualize>
+            <topic>${name}/camera/image_raw</topic>
+            <enable_metrics>true</enable_metrics>
         </sensor>
         </gazebo>
 
@@ -205,22 +195,23 @@
 
         <gazebo reference="${name}_imu">
             <gravity>true</gravity>
+
             <sensor name="${name}_imu_sensor" type="imu">
-            <always_on>true</always_on>
-            <update_rate>100</update_rate>
-            <visualize>true</visualize>
-            <topic>{name}/imu</topic>
-            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-                <topicName>${name}/imu</topicName>
-                <bodyName>${name}_imu</bodyName>
-                <updateRateHZ>833</updateRateHZ>
-                <gaussianNoise>0.0</gaussianNoise>
-                <xyzOffset>0 0 0</xyzOffset>
-                <rpyOffset>0 0 0</rpyOffset>
-                <frameName>${name}_imu</frameName>
-                <initialOrientationAsReference>false</initialOrientationAsReference>
-            </plugin>
-            <pose>0 0 0 0 0 0</pose>
+                <always_on>1</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+                <topic>${name}/imu</topic>
+                <enable_metrics>true</enable_metrics>
+                <plugin filename="ignition-gazebo-imu-system" name="gz::sim::systems::Imu">
+                    <topicName>${name}/imu</topicName>
+                    <bodyName>${name}_imu</bodyName>
+                    <updateRateHZ>833</updateRateHZ>
+                    <gaussianNoise>0.0</gaussianNoise>
+                    <xyzOffset>0 0 0</xyzOffset>
+                    <rpyOffset>0 0 0</rpyOffset>
+                    <frameName>${name}_imu</frameName>
+                    <initialOrientationAsReference>false</initialOrientationAsReference>
+                </plugin>
             </sensor>
         </gazebo>
 
