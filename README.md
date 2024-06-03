@@ -55,11 +55,11 @@ We rely on the [audio_common_msgs](https://github.com/ros-drivers/audio_common/t
 **Additional Note:** binary package will be released soon for ROS2!
 
 # Usage 
-Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS!
+Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS2!
 ### 1. Run the ROS2 package
 -  Launch the package:
     ```bash
-    $ ros2 launch nicla_vision_ros nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp" <optional arguments>
+    $ ros2 launch nicla_vision_ros2 nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp" <optional arguments>
     ```
     - Set the `receiver_ip` with the IP address of your ROS-running machine.
         You can get this IP address by executing the following command:
@@ -70,7 +70,7 @@ Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS
     - Set the socket type to be used, either TCP or UDP (`connection_type:="tcp"` or `"udp"`).
     
     Furthermore, using the `<optional arguments>`, you can decide:
-    - which sensor to be streamed in ROS
+    - which sensor to be streamed in ROS2
 
       (e.g. `enable_imu:=true enable_range:=true enable_audio:=true enable_audio_stamped:=false enable_camera_compressed:=true enable_camera_raw:=true`), and
     - on which socket port (default `receiver_port:=8002`).
@@ -79,7 +79,7 @@ Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS
     
 - For simulating the Arduino Nicla Vision in Gazebo and Rviz:
      ```bash
-    $ ros2 launch nicla_vision_ros nicla_sim.launch <optional arguments>
+    $ ros2 launch nicla_vision_ros2 nicla_sim.launch.py <optional arguments>
     ```
     Using the `<optional arguments>`, you can decide if to run the simulation in Gazebo or in Rviz, and which sensor to simulate (everything set to true as default).
 
