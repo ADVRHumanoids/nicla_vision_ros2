@@ -25,7 +25,6 @@ find_package(rosidl_default_generators REQUIRED)
 
 #Gazebo sim parts
 find_package(ros_gz REQUIRED)
-find_package(gazebo_plugins REQUIRED)
 
 
 
@@ -89,3 +88,4 @@ install(
 )
 
 ament_package()
+
