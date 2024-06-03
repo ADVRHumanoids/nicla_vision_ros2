@@ -4,7 +4,7 @@
     <arg name="nicla_name" default="nicla" />
     <arg name="receiver_ip"/>
     <arg name="receiver_port" default="8002" />
-    <arg name="connection_type" default="udp" /> <!-- tcp, udp -->
+    <arg name="connection_type"/> <!-- tcp, udp -->
     <arg name="enable_range" default="true" />
     <arg name="enable_camera_raw" default="false" />
     <arg name="enable_camera_compressed" default="true" />
