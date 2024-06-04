@@ -140,6 +140,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    image_bridge = Node(
+        package='ros_gz_image',
+        executable='image_bridge',
+        arguments=['nicla/camera/image_raw'],
+        output='screen'
+    )
+
     return LaunchDescription([
         nicla_tof_arg,
         nicla_tof_visualize_arg,
@@ -155,5 +162,6 @@ def generate_launch_description():
         robot_state_publisher,
         rviz,
         spawn,
-        bridge
+        bridge,
+        image_bridge
     ])
