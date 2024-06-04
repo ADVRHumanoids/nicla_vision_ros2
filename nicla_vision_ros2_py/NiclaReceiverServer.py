@@ -4,6 +4,7 @@ import queue
 import socketserver
 from threading import Thread
 import time
+import struct
 
 IMAGE_TYPE = 0b00
 AUDIO_TYPE = 0b01
@@ -116,6 +117,9 @@ class TCPHandler(socketserver.BaseRequestHandler):
 
         while True: 
             packet = self.request.recv(65000)
+            timestamp = time.time()
+            timestamp = struct.pack('>d', timestamp) 
+            packet = timestamp + packet 
             self.server.receiving_buffer.put_nowait(packet) 
 
 class NiclaReceiverTCP(socketserver.TCPServer):
@@ -159,6 +163,8 @@ class NiclaReceiverTCP(socketserver.TCPServer):
 
             try:  
                 bytes_packets = self.receiving_buffer.get_nowait()
+                timestamp = struct.unpack('>d', bytes_packets[:8])[0]
+                bytes_packets = bytes_packets[8:]
             except:
                 continue
 
@@ -170,9 +176,7 @@ class NiclaReceiverTCP(socketserver.TCPServer):
                 continue
             else:
                 total_length = len(bytes_packets)                 
-                loop_termination_flag = True
-
-                timestamp = time.time()
+                loop_termination_flag = True 
                 
                 while loop_termination_flag:
                     size_packet = int.from_bytes(bytes_packets[:4], "big")
