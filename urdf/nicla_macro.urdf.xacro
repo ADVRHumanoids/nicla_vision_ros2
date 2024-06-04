@@ -180,7 +180,7 @@
     <xacro:if value="${NICLA_IMU}">
         <link name="${name}_imu"></link>  
         <joint name="${name}_base_to_imu" type="fixed">
-            <origin xyz="-0.0078 -0.0046 -0.0015" rpy="0 0 0"/>
+            <origin xyz="-0.0078 -0.0046 -0.0015" rpy="${PI} 0 ${PI_2}"/>
             <parent link="${name}_base"/>
             <child link="${name}_imu"/>
         </joint>
