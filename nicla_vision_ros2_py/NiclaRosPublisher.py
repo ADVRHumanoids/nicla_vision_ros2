@@ -166,7 +166,7 @@ class NiclaRosPublisher(Node):
     def run(self):
 
         if self.enable_range and ((range := self.nicla_receiver_server.get_range()) is not None):
-            self.range_msg.header.stamp = Time(seconds=range[0]/1000).to_msg()
+            self.range_msg.header.stamp = Time(seconds=range[0]).to_msg()
 
             self.range_msg.range = int.from_bytes(range[1], "big")/1000
             self.range_pub.publish(self.range_msg)
@@ -177,12 +177,12 @@ class NiclaRosPublisher(Node):
             if (image := self.nicla_receiver_server.get_image()) is not None:
 
                 ##Publish info
-                self.camera_info_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()
+                self.camera_info_msg.header.stamp = Time(seconds=image[0]).to_msg()
                 self.camera_info_pub.publish(self.camera_info_msg)
 
                 ### PUBLISH COMPRESSED
                 if self.enable_camera_compressed:
-                    self.image_compressed_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()  
+                    self.image_compressed_msg.header.stamp = Time(seconds=image[0]).to_msg()  
 
                     self.image_compressed_msg.data = image[1]
                     self.image_compressed_pub.publish(self.image_compressed_msg)
@@ -195,7 +195,7 @@ class NiclaRosPublisher(Node):
                     # Decode the compressed image
                     img_raw = cv2.imdecode(nparr, cv2.IMREAD_COLOR) #NOTE: BGR CONVENTION 
 
-                    self.image_raw_msg.header.stamp = Time(seconds=image[0]/1000).to_msg()   
+                    self.image_raw_msg.header.stamp = Time(seconds=image[0]).to_msg()   
                     self.image_raw_msg.height = img_raw.shape[0]
                     self.image_raw_msg.width = img_raw.shape[1]
                     self.image_raw_msg.encoding = "bgr8"  # Assuming OpenCV returns BGR format
@@ -223,13 +223,13 @@ class NiclaRosPublisher(Node):
                     self.audio_pub.publish(self.audio_msg)
 
                 if self.enable_audio_stamped:
-                    self.audio_stamped_msg.header.stamp = Time(seconds=audio_data[0]/1000).to_msg()  
+                    self.audio_stamped_msg.header.stamp = Time(seconds=audio_data[0]).to_msg()  
                     self.audio_stamped_msg.audio.data = audio_data[1]
                     self.audio_stamped_pub.publish(self.audio_stamped_msg)
 
         ### IMU DATA
         if self.enable_imu and ((imu := self.nicla_receiver_server.get_imu()) is not None):
-            self.imu_msg.header.stamp = Time(seconds=imu[0]/1000).to_msg()    
+            self.imu_msg.header.stamp = Time(seconds=imu[0]).to_msg()    
 
             try:
                 acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack('>ffffff', imu[1])

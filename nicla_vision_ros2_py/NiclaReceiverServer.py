@@ -3,7 +3,7 @@
 import queue
 import socketserver
 from threading import Thread
-import rospy
+import time
 
 IMAGE_TYPE = 0b00
 AUDIO_TYPE = 0b01
@@ -21,7 +21,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
         #not used for udp
         #size_packet = int.from_bytes(packet[:4], "big")    
  
-        timestamp = rospy.Time.now() #int.from_bytes(packet[4:8], "big")
+        timestamp = time.time() #int.from_bytes(packet[4:8], "big")
         data_type = packet[8]
         data = packet[9:]
         
@@ -168,7 +168,7 @@ class NiclaReceiverTCP(socketserver.TCPServer):
                 total_length = len(bytes_packets)                 
                 loop_termination_flag = True
 
-                timestamp = rospy.Time.now() 
+                timestamp = time.time()
                 
                 while loop_termination_flag:
                     size_packet = int.from_bytes(bytes_packets[:4], "big")
