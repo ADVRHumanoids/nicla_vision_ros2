@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import queue
+import socket
 import socketserver
 from threading import Thread
 import time
@@ -114,13 +115,28 @@ class NiclaReceiverUDP(socketserver.UDPServer):
         
 class TCPHandler(socketserver.BaseRequestHandler):
     def handle(self): 
+        self.request.settimeout(5.0)  # Set a timeout  
+        self.server.nicla_disconnect = False
 
         while True: 
-            packet = self.request.recv(65000)
-            timestamp = time.time()
-            timestamp = struct.pack('>d', timestamp) 
-            packet = timestamp + packet 
-            self.server.receiving_buffer.put_nowait(packet) 
+            try:
+                packet = self.request.recv(65000)
+                if not packet:
+                    break 
+                timestamp = time.time()
+                timestamp = struct.pack('>d', timestamp) 
+                packet = timestamp + packet 
+                self.server.receiving_buffer.put_nowait(packet) 
+            except socket.timeout:
+                print("Warning: Nicla disconnected! Resetting server... ")
+                self.server.receiving_buffer.queue.clear()
+                self.server.nicla_disconnect = True
+                break 
+            except Exception as e:
+                print(f"Exception: {e}")
+                self.server.receiving_buffer.queue.clear()
+                self.server.nicla_disconnect = True
+                break  # Break the loop on any other exception 
 
 class NiclaReceiverTCP(socketserver.TCPServer):
 
@@ -145,7 +161,8 @@ class NiclaReceiverTCP(socketserver.TCPServer):
         if self.enable_range or self.enable_image or self.enable_audio or self.enable_imu:
             self.receiving_buffer = queue.Queue(maxsize=200)
 
-        self.server_thread = None
+        self.server_thread = None 
+        self.nicla_disconnect = False  
  
 
     def serve(self):
@@ -165,6 +182,10 @@ class NiclaReceiverTCP(socketserver.TCPServer):
                 bytes_packets = self.receiving_buffer.get_nowait()
                 timestamp = struct.unpack('>d', bytes_packets[:8])[0]
                 bytes_packets = bytes_packets[8:]
+
+                if self.nicla_disconnect:
+                    bytes_packets = bytes([])
+                    bkp_bytes_packets = bytes([])
             except:
                 continue
 
