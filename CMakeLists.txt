@@ -12,7 +12,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(xacro REQUIRED) #to launch nicla_sim
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -22,9 +21,6 @@ find_package(image_transport_plugins REQUIRED)
 #For messages
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-
-#Gazebo sim parts
-find_package(ros_gz REQUIRED)
 
 
 
