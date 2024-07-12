@@ -1,6 +1,9 @@
 # :rocket: Nicla Vision ROS2 package :rocket: 
 A ROS2 interface for the Arduino Nicla Vision board
 
+[![Build Status](https://build.ros2.org/buildStatus/icon?job=Jdev__nicla_vision_ros2__ubuntu_noble_amd64&subject=Jazzy%20Build)](https://build.ros2.org/job/Jdev__nicla_vision_ros2__ubuntu_noble_amd64/)
+[![Build Status](https://build.ros2.org/buildStatus/icon?job=Hdev__nicla_vision_ros2__ubuntu_jammy_amd64&subject=Humble%20Build)](https://build.ros2.org/job/Hdev__nicla_vision_ros2__ubuntu_jammy_amd64/)
+
 ![Alt Text](assets/Nicla_ROSpkg_Architecture.png)
 
 -------------------
