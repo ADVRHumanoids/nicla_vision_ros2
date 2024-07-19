@@ -22,15 +22,15 @@ import struct
 from sensor_msgs.msg import CompressedImage, Image, CameraInfo
 from sensor_msgs.msg import Range
 from sensor_msgs.msg import Imu
-from std_msgs.msg import String
 from nicla_vision_ros2.msg import AudioData, AudioDataStamped, AudioInfo
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
+import numpy as np
 
-from nicla_vision_ros2_py import NiclaReceiverUDP, NiclaReceiverTCP
+from nicla_vision_ros2_py import NiclaReceiverUDPMicroPy, NiclaReceiverTCPMicroPy
 
 
-class NiclaRosPublisher(Node):
+class NiclaRosPublisherMicroPy(Node):
 
     def __init__(self, rate):
         # instantiating the node
@@ -52,11 +52,6 @@ class NiclaRosPublisher(Node):
         self.declare_parameter("enable_camera_compressed", True)
         self.declare_parameter("enable_audio", True)
         self.declare_parameter("enable_audio_stamped", False)
-        self.declare_parameter("enable_audio_recognition_vosk", False)
-        self.declare_parameter("audio_recognition_model_path", "")
-        self.declare_parameter("audio_recognition_grammar", "")
-        self.declare_parameter("audio_recognition_listen_seconds", 2)
-        self.declare_parameter("audio_recognition_wave_output_filename", "")
         self.declare_parameter("enable_imu", True) 
 
         # Check if receiver_ip parameter is set and retrieve its value
@@ -76,11 +71,6 @@ class NiclaRosPublisher(Node):
         self.enable_camera_compressed = self.get_parameter("enable_camera_compressed").get_parameter_value().bool_value 
         self.enable_audio = self.get_parameter("enable_audio").get_parameter_value().bool_value 
         self.enable_audio_stamped = self.get_parameter("enable_audio_stamped").get_parameter_value().bool_value 
-        self.enable_audio_recognition_vosk = self.get_parameter("enable_audio_recognition_vosk").get_parameter_value().bool_value 
-        self.audio_recognition_model_path = self.get_parameter("audio_recognition_model_path").get_parameter_value().string_value 
-        self.audio_recognition_grammar = self.get_parameter("audio_recognition_grammar").get_parameter_value().string_value 
-        self.audio_recognition_listen_seconds = self.get_parameter("audio_recognition_listen_seconds").get_parameter_value().float_value 
-        self.audio_recognition_wave_output_filename = self.get_parameter("audio_recognition_wave_output_filename").get_parameter_value().string_value
         self.enable_imu = self.get_parameter("enable_imu").get_parameter_value().bool_value  
 
         sensor_string = []
@@ -107,11 +97,10 @@ class NiclaRosPublisher(Node):
             self.range_msg.radiation_type = Range.INFRARED
             self.range_msg.min_range = 0.0
             self.range_msg.max_range = 3.6
-            self.range_msg.field_of_view = 0.471239  # 27degrees according to VL53L1X spec
+            self.range_msg.field_of_view = 0.471239 #27degrees according to arduino doc
 
         if self.enable_camera_raw:
-            # Default topic name of image transport 
-            # (which is not available in python so we do not use it)
+            #default topic name of image transport (which is not available in python so we do not use it)
             image_raw_topic = nicla_name + "/camera/image_raw"
             self.image_raw_msg = Image()
             self.image_raw_msg.header.frame_id = nicla_name + "_camera"
@@ -125,9 +114,6 @@ class NiclaRosPublisher(Node):
             self.image_compressed_pub  = self.create_publisher(CompressedImage, image_compressed_topic, 5)
 
         if self.enable_camera_raw or self.enable_camera_compressed:
-            
-            self.cv_bridge = CvBridge()
-            
             camera_info_topic = nicla_name + "/camera/camera_info"
             self.camera_info_msg = CameraInfo() 
             self.camera_info_msg.header.frame_id = nicla_name + "_camera"
@@ -174,40 +160,18 @@ class NiclaRosPublisher(Node):
             self.imu_pub = self.create_publisher(Imu, imu_topic, 5)
 
         if connection_type == "udp":
-            self.nicla_receiver_server = NiclaReceiverUDP(ip, port, 
+            self.nicla_receiver_server = NiclaReceiverUDPMicroPy(ip, port, 
                                                             enable_range=self.enable_range, 
                                                             enable_image=self.enable_camera_raw or self.enable_camera_compressed,
                                                             enable_audio=self.enable_audio or self.enable_audio_stamped,
                                                             enable_imu=self.enable_imu)
         elif connection_type == "tcp":
-            self.nicla_receiver_server = NiclaReceiverTCP(ip, port, 
+            self.nicla_receiver_server = NiclaReceiverTCPMicroPy(ip, port, 
                                                             enable_range=self.enable_range, 
                                                             enable_image=self.enable_camera_raw or self.enable_camera_compressed,
                                                             enable_audio=self.enable_audio or self.enable_audio_stamped,
                                                             enable_imu=self.enable_imu)
-        else:
-            self.get_logger().error("Connection type ", connection_type, " not known")
-            raise Exception("Connection type not known")
-        
-        if self.enable_audio_recognition_vosk:
-            if not self.audio_recognition_model_path:
-                self.get_logger().error(
-                    "Path for VOSK recognizer model is an empty string! Please provide 'audio_recognition_model_path' arg"
-                )
-                exit()
 
-            from nicla_vision_ros2_py import SpeechRecognizer
-
-            self.speech_recognizer = SpeechRecognizer.SpeechRecognizer(
-                self.audio_recognition_model_path,
-                self.audio_recognition_grammar,
-                self.audio_recognition_listen_seconds,
-                self.audio_recognition_wave_output_filename,
-            )
-            self.speech_recognizer_pub = self.create_publisher(
-                String, nicla_name + "/audio_recognized", 10
-            )        
-        
         self.nicla_receiver_server.serve()
 
         self.timer = self.create_timer(1/rate, self.run)
@@ -218,42 +182,32 @@ class NiclaRosPublisher(Node):
         if self.enable_range and ((range := self.nicla_receiver_server.get_range()) is not None):
             self.range_msg.header.stamp = Time(seconds=range[0]).to_msg()
 
-            self.range_msg.range = int.from_bytes(range[1], "little")/1000
+            self.range_msg.range = int.from_bytes(range[1], "big")/1000
             self.range_pub.publish(self.range_msg)
 
-        # PUBLISH IMAGE
+        ### PUBLISH IMAGE
         if self.enable_camera_raw or self.enable_camera_compressed:
 
             if (image := self.nicla_receiver_server.get_image()) is not None:
 
-                # Publish info
+                ##Publish info
                 self.camera_info_msg.header.stamp = Time(seconds=image[0]).to_msg()
                 self.camera_info_pub.publish(self.camera_info_msg)
-                
-                img_raw = image[1]
 
-                # PUBLISH COMPRESSED
+                ### PUBLISH COMPRESSED
                 if self.enable_camera_compressed:
                     self.image_compressed_msg.header.stamp = Time(seconds=image[0]).to_msg()  
 
-                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
-                    result, compressed_img = cv2.imencode(
-                        ".jpg", img_raw, encode_param
-                    )
-
-                    try:
-                        self.image_compressed_msg.data = (
-                            self.cv_bridge.cv2_to_imgmsg(
-                                compressed_img, encoding="passthrough"
-                            ).data
-                        )
-                    except CvBridgeError as e:
-                        print(e)
-                        
+                    self.image_compressed_msg.data = image[1]
                     self.image_compressed_pub.publish(self.image_compressed_msg)
 
                 ### PUBLISH IMG RAW
                 if self.enable_camera_raw:
+                    # Convert the byte array to a numpy array
+                    nparr = np.frombuffer(image[1], np.uint8)
+
+                    # Decode the compressed image
+                    img_raw = cv2.imdecode(nparr, cv2.IMREAD_COLOR) #NOTE: BGR CONVENTION 
 
                     self.image_raw_msg.header.stamp = Time(seconds=image[0]).to_msg()   
                     self.image_raw_msg.height = img_raw.shape[0]
@@ -263,14 +217,15 @@ class NiclaRosPublisher(Node):
                     self.image_raw_msg.step = img_raw.shape[1] * 3  # Width * number of channels
 
                     # Convert the OpenCV image to ROS Image format using cv_bridge
+                    bridge = CvBridge()
                     try:
-                        self.image_raw_msg.data = self.cv_bridge.cv2_to_imgmsg(img_raw, encoding="bgr8").data
+                        self.image_raw_msg.data = bridge.cv2_to_imgmsg(img_raw, encoding="bgr8").data
                     except CvBridgeError as e:
                         print(e)                
 
                     self.image_raw_pub.publish(self.image_raw_msg)
 
-        # AUDIO DATA
+        ### AUDIO DATA
         if self.enable_audio or self.enable_audio_stamped :
 
             self.audio_info_pub.publish(self.audio_info_msg)
@@ -285,20 +240,13 @@ class NiclaRosPublisher(Node):
                     self.audio_stamped_msg.header.stamp = Time(seconds=audio_data[0]).to_msg()  
                     self.audio_stamped_msg.audio.data = audio_data[1]
                     self.audio_stamped_pub.publish(self.audio_stamped_msg)
-                
-                if self.enable_audio_recognition_vosk:
-                    audio_recognized = self.speech_recognizer.process_audio(
-                        audio_data[1]
-                    )
-                    if audio_recognized:  # if not empty
-                        self.speech_recognizer_pub.publish(audio_recognized)
 
         ### IMU DATA
         if self.enable_imu and ((imu := self.nicla_receiver_server.get_imu()) is not None):
             self.imu_msg.header.stamp = Time(seconds=imu[0]).to_msg()    
 
             try:
-                acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack('<ffffff', imu[1])  # <: little endian
+                acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z = struct.unpack('>ffffff', imu[1])
             except Exception as e:   
                 self.get_logger().error(f"imu pack has {len(imu[1])} bytes")
                 raise e

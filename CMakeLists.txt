@@ -60,6 +60,7 @@ ament_python_install_package(${PROJECT_NAME}_py)
 # Install Python executables
 install(PROGRAMS
   scripts/nicla_receiver
+  scripts/nicla_receiver_micropy
   DESTINATION lib/${PROJECT_NAME}
 )
 

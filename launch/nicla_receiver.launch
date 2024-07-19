@@ -5,14 +5,48 @@
     <arg name="receiver_ip"/>
     <arg name="receiver_port" default="8002" />
     <arg name="connection_type"/> <!-- tcp, udp -->
+    <arg name="use_arduino" default="true"/> <!-- false for micropython use -->
+
     <arg name="enable_range" default="true" />
+
     <arg name="enable_camera_raw" default="false" />
     <arg name="enable_camera_compressed" default="true" />
-    <arg name="enable_audio" default="false" />
-    <arg name="enable_audio_stamped" default="true" />
+
+    <arg name="enable_audio" default="true" />
+    <arg name="enable_audio_stamped" default="false" />
+    <arg name="enable_audio_recognition_vosk" default="false" doc="Enable speech recognition with VOSK (need to be installed)"/>
+    <arg name="audio_recognition_model_path" default=""/>
+    <arg name="audio_recognition_listen_seconds" default="2" doc="The speech recognition will process audio blocks of this duration"/>
+    <arg name="audio_recognition_grammar" default='[]' 
+        doc='VOSK format for grammar, [] to use default model graph 
+            or as JSON array of strings like: ["open", "bottle", "cup", "[unk]"]'/>
+    <arg name="audio_recognition_wave_output_filename" default="" 
+        doc="store detected audio in subsequent files. Absolute path may be included. 
+            If not, wav files will be store in .ros folder
+            Mostly for debug purposes, leave empty for not storing"/>
+
     <arg name="enable_imu" default="true" />
     
-    <node name="nicla_receiver" pkg="nicla_vision_ros2" exec="nicla_receiver" output="screen" respawn="false" >
+    <node if="$(var use_arduino)" name="nicla_receiver" pkg="nicla_vision_ros2" exec="nicla_receiver" output="screen" respawn="false" >
+        <param name="nicla_name" value="$(var nicla_name)" />
+        <param name="receiver_ip" value="$(var receiver_ip)" />
+        <param name="receiver_port" value="$(var receiver_port)" />
+        <param name="connection_type" value="$(var connection_type)" />
+
+        <param name="enable_range" value="$(var enable_range)" />
+        <param name="enable_camera_raw" value="$(var enable_camera_raw)" />
+        <param name="enable_camera_compressed" value="$(var enable_camera_compressed)" />
+        <param name="enable_audio" value="$(var enable_audio)" />
+        <param name="enable_audio_stamped" value="$(var enable_audio_stamped)" />
+        <param name="enable_audio_recognition_vosk" value="$(var enable_audio_recognition_vosk)" />
+        <param name="audio_recognition_model_path" value="$(var audio_recognition_model_path)" />
+        <param name="audio_recognition_listen_seconds" value="$(var audio_recognition_listen_seconds)" />
+        <param name="audio_recognition_grammar" value="$(var audio_recognition_grammar)" />
+        <param name="audio_recognition_wave_output_filename" value="$(var audio_recognition_wave_output_filename)" />
+        <param name="enable_imu" value="$(var enable_imu)" />
+    </node>  
+
+    <node unless="$(var use_arduino)" name="nicla_receiver" pkg="nicla_vision_ros2" exec="nicla_receiver_micropy" output="screen" respawn="false" >
         <param name="nicla_name" value="$(var nicla_name)" />
         <param name="receiver_ip" value="$(var receiver_ip)" />
         <param name="receiver_port" value="$(var receiver_port)" />
