@@ -23,17 +23,18 @@ def main(args=None):
     rclpy.init(args=args)
     nicla_ros_publisher = NiclaRosPublisher(rate=500)
 
-    nicla_ros_publisher.get_logger().info('Starting ROS loop')
+    nicla_ros_publisher.get_logger().info("Starting ROS loop")
 
     try:
         rclpy.spin(nicla_ros_publisher)
 
     except Exception as e:
-        nicla_ros_publisher.get_logger().error('Exception: %s' % str(e))
+        nicla_ros_publisher.get_logger().error("Exception: %s" % str(e))
 
     nicla_ros_publisher.stop()
     nicla_ros_publisher.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
