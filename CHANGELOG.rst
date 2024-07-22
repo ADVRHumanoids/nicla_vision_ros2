@@ -2,8 +2,11 @@
 Changelog for package nicla_vision_ros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.1 (2024-07-22)
-------------------
+Forthcoming
+-----------
+* jazzy bumping
+* 1.0.1
+* created changelog
 * super linted
 * debugged
 * linted
