@@ -243,8 +243,8 @@ class NiclaReceiverTCPMicroPy(socketserver.TCPServer):
                     size_packet = int.from_bytes(bytes_packets[:4], "big")
 
                     if total_length - 4 >= size_packet:
-                        packet = bytes_packets[4 : size_packet + 4]
-                        bytes_packets = bytes_packets[size_packet + 4 :]
+                        packet = bytes_packets[4:size_packet + 4]
+                        bytes_packets = bytes_packets[size_packet + 4:]
 
                         # timestamp = int.from_bytes(packet[:4], "big")
 

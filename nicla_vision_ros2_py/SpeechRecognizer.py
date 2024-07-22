@@ -64,7 +64,7 @@ class SpeechRecognizer:
         ):  # process in blocks of 1 second
             chunk = self.audio_buffer[: round(self.RATE * self.LISTEN_SECONDS)]
             self.audio_buffer = self.audio_buffer[
-                round(self.RATE * self.LISTEN_SECONDS) :
+                round(self.RATE * self.LISTEN_SECONDS):
             ]
 
             if self.recognizer.AcceptWaveform(chunk.tobytes()):
@@ -99,7 +99,11 @@ class SpeechRecognizer:
             wf.setframerate(self.RATE)
             wf.writeframes(b"".join(self.recording_frames))
 
-        print(
-            f"Saved recording as {self.WAVE_OUTPUT_FILENAME+str(self.WAVE_OUTPUT_FILENAME_i)+'.wav'}"
+        msg_print = (
+            "Saved recording as"
+            + f"{self.WAVE_OUTPUT_FILENAME}"
+            + f"{str(self.WAVE_OUTPUT_FILENAME_i)}"
+            + ".wav"
         )
+        print(msg_print)
         self.recording_frames = []

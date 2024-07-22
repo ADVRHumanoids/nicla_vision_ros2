@@ -3,6 +3,12 @@ from glob import glob
 from setuptools import setup
 
 package_name = "nicla_vision_ros2"
+author_email_str = (
+    "toridebraus@gmail.com, "
+    "damiano.gasperini98@gmail.com, "
+    "delbianco.edoardo@gmail.com, "
+    "rollo.f96@gmail.com"
+)
 
 setup(
     name=package_name,
@@ -51,7 +57,7 @@ setup(
     install_requires=["setuptools"],
     zip_safe=True,
     author="Davide Torielli, Damiano Gasperini, Edoardo Del Bianco, Federico Rollo",
-    author_email="toridebraus@gmail.com, damiano.gasperini98@gmail.com, delbianco.edoardo@gmail.com, rollo.f96@gmail.com",
+    author_email=author_email_str,
     keywords=[
         "nicla_vision",
         "driver",

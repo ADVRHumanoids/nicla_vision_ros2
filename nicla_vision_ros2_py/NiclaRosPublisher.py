@@ -159,9 +159,11 @@ class NiclaRosPublisher(Node):
         if self.enable_imu:
             sensor_string.append("imu")
 
-        self.get_logger().info(
-            f"Initializing at {ip}:{port} with {connection_type} connection with sensors: {sensor_string}"
+        str_msg = (
+            f"Initializing at {ip}:{port} with {connection_type}"
+            + f"connection with sensors: {sensor_string}"
         )
+        self.get_logger().info(str_msg)
 
         if self.enable_range:
             range_topic = nicla_name + "/tof"
@@ -304,9 +306,12 @@ class NiclaRosPublisher(Node):
 
         if self.enable_audio_recognition_vosk:
             if not self.audio_recognition_model_path:
-                self.get_logger().error(
-                    "Path for VOSK recognizer model is an empty string! Please provide 'audio_recognition_model_path' arg"
+                str_print = (
+                    "Path for VOSK recognizer model is" +
+                    "an empty string! Please provide " +
+                    "'audio_recognition_model_path' arg"
                 )
+                self.get_logger().error(str_print)
                 exit()
 
             from nicla_vision_ros2_py import SpeechRecognizer

@@ -41,13 +41,13 @@ class NiclaRosPublisherMicroPy(Node):
 
         # Declare parameters with default values
 
-        # used for some topic message header, be sure to use the same 
+        # used for some topic message header, be sure to use the same
         # name here and in the urdf for proper rviz visualization
         self.declare_parameter("nicla_name", "nicla")
 
         self.declare_parameter("receiver_ip", rclpy.Parameter.Type.STRING)
 
-        # server address and port (the address of the machine running 
+        # server address and port (the address of the machine running
         # this code, any available port)
         self.declare_parameter("receiver_port", 8002)
         self.declare_parameter("connection_type", "udp")
@@ -124,9 +124,12 @@ class NiclaRosPublisherMicroPy(Node):
         if self.enable_imu:
             sensor_string.append("imu")
 
-        self.get_logger().info(
-            f"Initializing at {ip}:{port} with {connection_type} connection with sensors: {sensor_string}"
+        print_str = (
+            f"Initializing at {ip}:{port}" +
+            f"with {connection_type} connection with" +
+            f" sensors: {sensor_string}"
         )
+        self.get_logger().info(print_str)
 
         if self.enable_range:
             range_topic = nicla_name + "/tof"
@@ -141,7 +144,7 @@ class NiclaRosPublisherMicroPy(Node):
             )
 
         if self.enable_camera_raw:
-            # default topic name of image transport (which is not 
+            # default topic name of image transport (which is not
             # available in python so we do not use it)
             image_raw_topic = nicla_name + "/camera/image_raw"
             self.image_raw_msg = Image()
@@ -318,7 +321,7 @@ class NiclaRosPublisherMicroPy(Node):
                         img_raw.shape[1] * 3
                     )  # Width * number of channels
 
-                    # Convert the OpenCV image to ROS Image format 
+                    # Convert the OpenCV image to ROS Image format
                     # using cv_bridge
                     bridge = CvBridge()
                     try:
