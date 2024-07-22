@@ -2,8 +2,8 @@
 Changelog for package nicla_vision_ros2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2024-07-22)
+------------------
 * super linted
 * debugged
 * linted
