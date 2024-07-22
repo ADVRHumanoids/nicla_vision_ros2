@@ -14,15 +14,14 @@
 
     <arg name="enable_audio" default="true" />
     <arg name="enable_audio_stamped" default="false" />
-    <arg name="enable_audio_recognition_vosk" default="false" doc="Enable speech recognition with VOSK (need to be installed)"/>
+    <arg name="enable_audio_recognition_vosk" default="false" description="Enable speech recognition with VOSK (need to be installed)"/>
     <arg name="audio_recognition_model_path" default=""/>
-    <arg name="audio_recognition_listen_seconds" default="2" doc="The speech recognition will process audio blocks of this duration"/>
-    <arg name="audio_recognition_grammar" default='[]' 
-        doc='VOSK format for grammar, [] to use default model graph 
-            or as JSON array of strings like: ["open", "bottle", "cup", "[unk]"]'/>
+    <arg name="audio_recognition_listen_seconds" default="2.0" description="The speech recognition will process audio blocks of this duration"/>
+    <arg name="audio_recognition_grammar" default="['']" 
+        description="VOSK format for grammar, [''] to use default model graph 
+            or as JSON array of strings like: ['open', 'bottle', 'cup', '[unk]'] take care of using single apex for the strings" />
     <arg name="audio_recognition_wave_output_filename" default="" 
-        doc="store detected audio in subsequent files. Absolute path may be included. 
-            If not, wav files will be store in .ros folder
+        description="store detected audio in subsequent files. Absolute path may be included. 
             Mostly for debug purposes, leave empty for not storing"/>
 
     <arg name="enable_imu" default="true" />

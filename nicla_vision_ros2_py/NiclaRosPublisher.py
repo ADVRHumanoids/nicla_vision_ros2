@@ -25,7 +25,6 @@ from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 from nicla_vision_ros2.msg import AudioData, AudioDataStamped, AudioInfo
 from cv_bridge import CvBridge, CvBridgeError
-import cv2
 
 from nicla_vision_ros2_py import NiclaReceiverUDP, NiclaReceiverTCP
 
@@ -38,13 +37,13 @@ class NiclaRosPublisher(Node):
 
         # Declare parameters with default values
 
-        # used for some topic message header, be sure to use the same 
+        # used for some topic message header, be sure to use the same
         # name here and in the urdf for proper rviz visualization
         self.declare_parameter("nicla_name", "nicla")
 
         self.declare_parameter("receiver_ip", rclpy.Parameter.Type.STRING)
 
-        # server address and port (the address of the machine 
+        # server address and port (the address of the machine
         # running this code, any available port)
         self.declare_parameter("receiver_port", 8002)
         self.declare_parameter("connection_type", "udp")
@@ -56,8 +55,8 @@ class NiclaRosPublisher(Node):
         self.declare_parameter("enable_audio_stamped", False)
         self.declare_parameter("enable_audio_recognition_vosk", False)
         self.declare_parameter("audio_recognition_model_path", "")
-        self.declare_parameter("audio_recognition_grammar", "")
-        self.declare_parameter("audio_recognition_listen_seconds", 2)
+        self.declare_parameter("audio_recognition_grammar", [""])
+        self.declare_parameter("audio_recognition_listen_seconds", 2.0)
         self.declare_parameter("audio_recognition_wave_output_filename", "")
         self.declare_parameter("enable_imu", True)
 
@@ -121,12 +120,21 @@ class NiclaRosPublisher(Node):
         self.audio_recognition_grammar = (
             self.get_parameter("audio_recognition_grammar")
             .get_parameter_value()
-            .string_value
+            .string_array_value
         )
+        if (
+            len(self.audio_recognition_grammar) == 0
+            or self.audio_recognition_grammar[0] == ""
+        ):
+            self.audio_recognition_grammar = "[]"
+        self.audio_recognition_grammar = str(
+            self.audio_recognition_grammar
+        ).replace("'", '"')
+
         self.audio_recognition_listen_seconds = (
             self.get_parameter("audio_recognition_listen_seconds")
             .get_parameter_value()
-            .float_value
+            .double_value
         )
         self.audio_recognition_wave_output_filename = (
             self.get_parameter("audio_recognition_wave_output_filename")
@@ -346,19 +354,14 @@ class NiclaRosPublisher(Node):
                         seconds=image[0]
                     ).to_msg()
 
-                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
-                    result, compressed_img = cv2.imencode(
-                        ".jpg", img_raw, encode_param
-                    )
-
                     try:
                         self.image_compressed_msg.data = (
-                            self.cv_bridge.cv2_to_imgmsg(
-                                compressed_img, encoding="passthrough"
+                            self.cv_bridge.cv2_to_compressed_imgmsg(
+                                img_raw, dst_format="jpg"
                             ).data
                         )
                     except CvBridgeError as e:
-                        print(e)
+                        self.get_logger().error(e)
 
                     self.image_compressed_pub.publish(
                         self.image_compressed_msg
@@ -380,14 +383,14 @@ class NiclaRosPublisher(Node):
                         img_raw.shape[1] * 3
                     )  # Width * number of channels
 
-                    # Convert the OpenCV image to ROS Image format using 
+                    # Convert the OpenCV image to ROS Image format using
                     # cv_bridge
                     try:
                         self.image_raw_msg.data = self.cv_bridge.cv2_to_imgmsg(
                             img_raw, encoding="bgr8"
                         ).data
                     except CvBridgeError as e:
-                        print(e)
+                        self.get_logger().error(e)
 
                     self.image_raw_pub.publish(self.image_raw_msg)
 
@@ -415,8 +418,11 @@ class NiclaRosPublisher(Node):
                     audio_recognized = self.speech_recognizer.process_audio(
                         audio_data[1]
                     )
+
                     if audio_recognized:  # if not empty
-                        self.speech_recognizer_pub.publish(audio_recognized)
+                        msg = String()
+                        msg.data = audio_recognized
+                        self.speech_recognizer_pub.publish(msg)
 
         # IMU DATA
         if self.enable_imu and (

@@ -62,9 +62,9 @@ class SpeechRecognizer:
         if (
             len(self.audio_buffer) > self.RATE * self.LISTEN_SECONDS
         ):  # process in blocks of 1 second
-            chunk = self.audio_buffer[: self.RATE * self.LISTEN_SECONDS]
+            chunk = self.audio_buffer[: round(self.RATE * self.LISTEN_SECONDS)]
             self.audio_buffer = self.audio_buffer[
-                self.RATE * self.LISTEN_SECONDS:
+                round(self.RATE * self.LISTEN_SECONDS) :
             ]
 
             if self.recognizer.AcceptWaveform(chunk.tobytes()):
