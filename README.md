@@ -42,8 +42,14 @@ In this repository you can find the Python code optimised for receiving the data
 -------------------
 
 # Installation
-Step-by-step instructions on how to get the ROS package running (tested on ROS Noetic).
+Step-by-step instructions on how to get the ROS package running
 
+Binaries available for `humble` and `jazzy`:  
+`sudo apt install ros-$ROS_DISTRO-nicla-vision-ros`  
+For ROS1, check https://github.com/ADVRHumanoids/nicla_vision_ros.git
+
+### Source installation
+Usual `colcon` build:
 ```bash
 $ cd <your_workpace>/src
 $ git clone https://github.com/ADVRHumanoids/nicla_vision_ros2.git
@@ -52,14 +58,24 @@ $ colcon build
 $ source <your_workpace>/devel/setup.bash
 ```
 
+## Arduino Nicla Vision setup
+After having completed the setup steps in the [Nicla Vision Drivers repository](https://github.com/ADVRHumanoids/nicla_vision_drivers.git), just turn on your Arduino Nicla Vision. 
+When you power on your Arduino Nicla Vision, it will automatically connect to the network and it will start streaming to your ROS-running machine.
+
+## Optional Audio Recognition with VOSK
+It is possible to run a speech recognition feature directly on this module, that will then publish the recognized words on the `/nicla/audio_recognized` topic. At the moment, [VOSK](https://alphacephei.com/vosk/) is utilized. Only Arduino version is supported.
+#### VOSK setup
+1. ```pip install vosk```
+2. Download a VOSK model https://alphacephei.com/vosk/models
+3. Check the `recognition` arguments in the ```nicla_receiver.launch``` file
+
 ### Note
 We rely on the [audio_common_msgs](https://github.com/ros-drivers/audio_common/tree/master/audio_common_msgs) for the microphone data. Nevertheless, such package is not available as binary for ros2 yet. Hence, for now, we have copy-pasted the messages in this repo itself.
 
-**Additional Note:** binary package will be released soon for ROS2!
-
 # Usage 
-Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS2!
-### 1. Run the ROS2 package
+Follow the below steps for enjoying your Arduino Nicla Vision board with ROS2!
+
+## Run the ROS2 package
 -  Launch the package:
     ```bash
     $ ros2 launch nicla_vision_ros2 nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp" <optional arguments>
@@ -78,8 +94,10 @@ Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS
       (e.g. `enable_imu:=true enable_range:=true enable_audio:=true enable_audio_stamped:=false enable_camera_compressed:=true enable_camera_raw:=true`), and
     - on which socket port (default `receiver_port:=8002`).
 
-    Once you run it, you will be ready for receiving the sensors data transmitted by the board, so now you can move ahead to point **[2. Arduino Nicla Vision setup](#2-arduino-nicla-vision-setup)**. 
-    
+    Once you run it, you will be ready for receiving the sensors data
+
+## Simulated board 
+
 - For simulating the Arduino Nicla Vision in Gazebo and Rviz:
      ```bash
     $ ros2 launch nicla_vision_ros2 nicla_sim.launch.py <optional arguments>
@@ -88,11 +106,10 @@ Follow the below two steps for enjoying your Arduino Nicla Vision board with ROS
 
   ![Alt Text](assets/nicla_rviz.jpg)
     
-### 2. Arduino Nicla Vision setup
-After having completed the setup steps in the [Nicla Vision Drivers repository](https://github.com/ADVRHumanoids/nicla_vision_drivers.git), just turn on your Arduino Nicla Vision. 
-When you power on your Arduino Nicla Vision, it will automatically connect to the network and it will start streaming to your ROS-running machine.
+## Optional Micropython Version
+**Note** this version is not supported and maintained anymore, we defitively moved to the Arduino version.  
 
-**Note:** Look at the LED of your board! The first seconds (about 15 sec) after having turned it on, the LED should be Blue. When the board is correctly connected and it is streaming, the LED will turn off. If you are having connection issues, the LED will be Blue again. If during execution you see a Green LED, it is for unforseen errors. If during execution you see a Red LED, it is for memory errors (usually picture quality too high).
+If you want to use the micropython driver of the nicla (after setup it accordingly), simply run the `nicla_receiver.launch` with `driver_version:=micropython` as argument.
 
 # Video Demonstration
 
