@@ -128,12 +128,16 @@ Here some useful links:
 Distributed under the Apache-2.0 License. See LICENSE for more information.
 
 # Citation 
-:raised_hands: If you use this work or take inspiration from it, please cite (publication in progress):
-```bash
-@inproceedings{delbianco2024dagana,
-  title={},
-  author={},
-  booktitle={},
-  year={}
+:raised_hands: If you use this work or take inspiration from it, please cite (to be published):
+```bibtex
+@inproceedings {DelBianco2024,
+  author = {Del Bianco, Edoardo and Torielli, Davide and Rollo, Federico and Gasperini, Damiano and Laurenzi, Arturo and Baccelliere, Lorenzo and Muratore, Luca and Roveri, Marco and Tsagarakis, Nikos G.},
+  booktitle={2024 IEEE-RAS 23rd International Conference on Humanoid Robots (Humanoids)}, 
+  title = {A High-Force Gripper with Embedded Multimodal Sensing for Powerful and Perception Driven Grasping},
+  year={2024},
+  volume={},
+  number={},
+  pages={},
+  doi={}
 }
 ```
