@@ -117,10 +117,6 @@ https://github.com/ADVRHumanoids/nicla_vision_ros/assets/26459008/a3eaf921-02ea-
 
 <!-- Raw video: https://github.com/ADVRHumanoids/nicla_vision_ros/assets/63496571/699b265c-3f6a-4a9d-8d6c-fccf6bd39227 -->
 
-# Presentation at ROSCON2024
-- Video https://vimeo.com/1026030054
-- Slides https://roscon.ros.org/2024/talks/Unlocking_the_Potential_of_the_Nicla_Vision_Board_with_ROS-ROS2.pdf
-
 # Package List
 Here some useful links:
 
@@ -131,8 +127,12 @@ Here some useful links:
 # License
 Distributed under the Apache-2.0 License. See LICENSE for more information.
 
+# ROSCon24 Talk
+- Video https://vimeo.com/1026030054
+- Slides https://roscon.ros.org/2024/talks/Unlocking_the_Potential_of_the_Nicla_Vision_Board_with_ROS-ROS2.pdf
+- 
 # Citation 
-:raised_hands: If you use this work or take inspiration from it, please cite (to be published):
+:raised_hands: If you use this work or take inspiration from it, please cite:
 ```bibtex
 @inproceedings {DelBianco2024,
   author = {Del Bianco, Edoardo and Torielli, Davide and Rollo, Federico and Gasperini, Damiano and Laurenzi, Arturo and Baccelliere, Lorenzo and Muratore, Luca and Roveri, Marco and Tsagarakis, Nikos G.},
