@@ -2,22 +2,29 @@
 <launch>
 
     <arg name="nicla_name" default="nicla" />
-    <arg name="receiver_ip"/>
-    <arg name="receiver_port" default="8002" />
-    <arg name="connection_type"/> <!-- tcp, udp -->
-    <arg name="use_arduino" default="true"/> <!-- false for micropython use -->
+    <arg name="receiver_ip" description="ignored for serial connection"/>
+    <arg name="receiver_port" default="8002" description="For serial connection, something like '/dev/ttaACM0'"/>
+    <arg name="connection_type" description="tcp, udp, or serial. Serial with micropy not implemented"/>
+    <arg name="use_arduino" default="true" description="false for micropython type"/>
+    <arg name="baudrate" default="500000" description="Baudrate for serial connection, ignored for tcp/udp connections"/>
 
     <arg name="enable_range" default="true" />
 
     <arg name="enable_camera_raw" default="false" />
     <arg name="enable_camera_compressed" default="true" />
+    <arg name="camera_receive_compressed" default="false" description="Set according to COMPRESS_IMAGE arg of the nicla driver. Ignored for TCP and UDP connections. Keep false if bayer pixel format" />
+    <arg name="camera_pixel_format" default="rgb565" description="'rgb565' or 'bayer'. Set according to CAM_PIXFORMAT arg of the nicla driver. Ignored for TCP and UDP connections. Use rgb565 if camera_receive_compressed" />
+    <arg name="camera_width" default="320" description="Set according to CAM_RES arg of the nicla driver. Ignored for TCP and UDP connections" />
+    <arg name="camera_height" default="240" description="Set according to CAM_RES arg of the nicla driver. Ignored for TCP and UDP connections" />
+    <arg name="camera_img_rotate_code" default="0" description="Rotate the image received by the nicla before publishing. 0:no rotation 1,2.3 : 90, 180, 270, clockwise"/>
 
     <arg name="enable_audio" default="true" />
     <arg name="enable_audio_stamped" default="false" />
     <arg name="enable_audio_recognition_vosk" default="false" description="Enable speech recognition with VOSK (need to be installed)"/>
-    <arg name="audio_recognition_model_path" default=""/>
+    <arg name="audio_recognition_model_path" default="$(find-pkg-share nicla_vision_ros2)/vosk_models"/>
+    <arg name="audio_recognition_model_name" default="vosk-model-small-en-us-0.15"/>
     <arg name="audio_recognition_listen_seconds" default="2.0" description="The speech recognition will process audio blocks of this duration"/>
-    <arg name="audio_recognition_grammar" default="['']" 
+    <arg name="audio_recognition_grammar" default="['']"
         description="VOSK format for grammar, [''] to use default model graph 
             or as JSON array of strings like: ['open', 'bottle', 'cup', '[unk]'] take care of using single apex for the strings" />
     <arg name="audio_recognition_wave_output_filename" default="" 
@@ -31,14 +38,20 @@
         <param name="receiver_ip" value="$(var receiver_ip)" />
         <param name="receiver_port" value="$(var receiver_port)" />
         <param name="connection_type" value="$(var connection_type)" />
+        <param name="baudrate" value="$(var baudrate)" />
 
         <param name="enable_range" value="$(var enable_range)" />
         <param name="enable_camera_raw" value="$(var enable_camera_raw)" />
         <param name="enable_camera_compressed" value="$(var enable_camera_compressed)" />
+        <param name="camera_receive_compressed" value="$(var camera_receive_compressed)" />
+        <param name="camera_pixel_format" value="$(var camera_pixel_format)" />
+        <param name="camera_width" value="$(var camera_width)" />
+        <param name="camera_height" value="$(var camera_height)" />
+        <param name="camera_img_rotate_code" value="$(var camera_img_rotate_code)" />
         <param name="enable_audio" value="$(var enable_audio)" />
         <param name="enable_audio_stamped" value="$(var enable_audio_stamped)" />
         <param name="enable_audio_recognition_vosk" value="$(var enable_audio_recognition_vosk)" />
-        <param name="audio_recognition_model_path" value="$(var audio_recognition_model_path)" />
+        <param name="audio_recognition_model" value="$(var audio_recognition_model_path)/$(var audio_recognition_model_name)" />
         <param name="audio_recognition_listen_seconds" value="$(var audio_recognition_listen_seconds)" />
         <param name="audio_recognition_grammar" value="$(var audio_recognition_grammar)" />
         <param name="audio_recognition_wave_output_filename" value="$(var audio_recognition_wave_output_filename)" />

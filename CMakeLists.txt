@@ -84,5 +84,10 @@ install(
   DESTINATION share/${PROJECT_NAME}/meshes
 )
 
+install(
+  DIRECTORY vosk_models/
+  DESTINATION share/${PROJECT_NAME}/vosk_models
+)
+
 ament_package()
 

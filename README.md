@@ -78,20 +78,26 @@ Follow the below steps for enjoying your Arduino Nicla Vision board with ROS2!
 ## Run the ROS2 package
 -  Launch the package:
     ```bash
-    $ ros2 launch nicla_vision_ros2 nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp" <optional arguments>
+    $ ros2 launch nicla_vision_ros2 nicla_receiver.launch receiver_ip:="x.x.x.x" connection_type:="tcp/udp/serial" <optional arguments>
     ```
+    - Set the socket type to be used, TCP, UDP, or Serial (`connection_type:=tcp`, `udp`, or `serial`).
+
     - Set the `receiver_ip` with the IP address of your ROS-running machine.
         You can get this IP address by executing the following command:
         ```bash
         $ ifconfig
         ```
         and taking the "inet" address under the "enp" voice.
-    - Set the socket type to be used, either TCP or UDP (`connection_type:="tcp"` or `"udp"`).
     
     Furthermore, using the `<optional arguments>`, you can decide:
     - which sensor to be streamed in ROS2
+      e.g. `enable_imu:=true enable_range:=true enable_audio:=true enable_audio_stamped:=false enable_camera_compressed:=true enable_camera_raw:=true`
 
-      (e.g. `enable_imu:=true enable_range:=true enable_audio:=true enable_audio_stamped:=false enable_camera_compressed:=true enable_camera_raw:=true`), and
+    - with Serial connection, set `camera_receive_compressed` according to how nicla is sending images (COMPRESS_IMAGE)
+
+    - on which socket port (default `receiver_port:=8002`). For Serial connection, `receiver_port` argument is used to specify the port used by the board 
+      e.g. `receiver_port:=/dev/ttyACM0`
+
     - on which socket port (default `receiver_port:=8002`).
 
     Once you run it, you will be ready for receiving the sensors data
@@ -141,7 +147,7 @@ Distributed under the Apache-2.0 License. See LICENSE for more information.
   year={2024},
   volume={},
   number={},
-  pages={},
-  doi={}
+  pages={149-156},
+  doi={10.1109/Humanoids58906.2024.10769951}
 }
 ```

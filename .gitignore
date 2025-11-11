@@ -1,0 +1,7 @@
+*.vscode
+*.kdev
+*.kdev4
+*.egg-info
+__pycache__/
+vosk_models/*
+!vosk_models/.gitkeep

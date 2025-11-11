@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from nicla_vision_ros2_py.NiclaReceiverServer import NiclaReceiverUDP, NiclaReceiverTCP # noqa
+from nicla_vision_ros2_py.NiclaReceiverServerSerial import NiclaReceiverSerial # noqa
 from nicla_vision_ros2_py.NiclaRosPublisher import NiclaRosPublisher # noqa
 
 from nicla_vision_ros2_py.NiclaReceiverServerMicroPy import NiclaReceiverUDPMicroPy, NiclaReceiverTCPMicroPy  # noqa

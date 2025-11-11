@@ -25,8 +25,9 @@ from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 from nicla_vision_ros2.msg import AudioData, AudioDataStamped, AudioInfo
 from cv_bridge import CvBridge, CvBridgeError
+from cv2 import rotate
 
-from nicla_vision_ros2_py import NiclaReceiverUDP, NiclaReceiverTCP
+from nicla_vision_ros2_py import NiclaReceiverUDP, NiclaReceiverTCP, NiclaReceiverSerial
 
 
 class NiclaRosPublisher(Node):
@@ -45,16 +46,21 @@ class NiclaRosPublisher(Node):
 
         # server address and port (the address of the machine
         # running this code, any available port)
-        self.declare_parameter("receiver_port", 8002)
+        self.declare_parameter("receiver_port", "8002")
         self.declare_parameter("connection_type", "udp")
-
+        self.declare_parameter("baudrate", 0)
         self.declare_parameter("enable_range", True)
-        self.declare_parameter("enable_camera_raw", False)
-        self.declare_parameter("enable_camera_compressed", True)
+        self.declare_parameter("enable_camera_raw", True)
+        self.declare_parameter("enable_camera_compressed", False)
+        self.declare_parameter("camera_receive_compressed", False)
+        self.declare_parameter("camera_pixel_format", "rgb565")
+        self.declare_parameter("camera_width", 320)
+        self.declare_parameter("camera_height", 240)
+        self.declare_parameter("camera_img_rotate_code", 0)
         self.declare_parameter("enable_audio", True)
         self.declare_parameter("enable_audio_stamped", False)
         self.declare_parameter("enable_audio_recognition_vosk", False)
-        self.declare_parameter("audio_recognition_model_path", "")
+        self.declare_parameter("audio_recognition_model", "")
         self.declare_parameter("audio_recognition_grammar", [""])
         self.declare_parameter("audio_recognition_listen_seconds", 2.0)
         self.declare_parameter("audio_recognition_wave_output_filename", "")
@@ -78,12 +84,17 @@ class NiclaRosPublisher(Node):
         port = (
             self.get_parameter("receiver_port")
             .get_parameter_value()
-            .integer_value
+            .string_value
         )
         connection_type = (
             self.get_parameter("connection_type")
             .get_parameter_value()
             .string_value
+        )
+        baudrate = (
+            self.get_parameter("baudrate")
+            .get_parameter_value()
+            .integer_value
         )
 
         self.enable_range = (
@@ -99,6 +110,31 @@ class NiclaRosPublisher(Node):
             .get_parameter_value()
             .bool_value
         )
+        self.camera_receive_compressed = (
+            self.get_parameter("camera_receive_compressed")
+            .get_parameter_value()
+            .bool_value
+        )
+        self.camera_pixel_format = (
+            self.get_parameter("camera_pixel_format")
+            .get_parameter_value()
+            .string_value
+        )
+        self.camera_width = (
+            self.get_parameter("camera_width")
+            .get_parameter_value()
+            .integer_value
+        )
+        self.camera_height = (
+            self.get_parameter("camera_height")
+            .get_parameter_value()
+            .integer_value
+        )
+        self.camera_img_rotate_code = (
+            self.get_parameter("camera_img_rotate_code")
+            .get_parameter_value()
+            .integer_value
+        )
         self.enable_audio = (
             self.get_parameter("enable_audio").get_parameter_value().bool_value
         )
@@ -112,8 +148,8 @@ class NiclaRosPublisher(Node):
             .get_parameter_value()
             .bool_value
         )
-        self.audio_recognition_model_path = (
-            self.get_parameter("audio_recognition_model_path")
+        self.audio_recognition_model = (
+            self.get_parameter("audio_recognition_model")
             .get_parameter_value()
             .string_value
         )
@@ -161,7 +197,7 @@ class NiclaRosPublisher(Node):
 
         str_msg = (
             f"Initializing at {ip}:{port} with {connection_type}"
-            + f"connection with sensors: {sensor_string}"
+            + f" connection with sensors: {sensor_string}"
         )
         self.get_logger().info(str_msg)
 
@@ -205,40 +241,78 @@ class NiclaRosPublisher(Node):
             camera_info_topic = nicla_name + "/camera/camera_info"
             self.camera_info_msg = CameraInfo()
             self.camera_info_msg.header.frame_id = nicla_name + "_camera"
-            self.camera_info_msg.height = 240
-            self.camera_info_msg.width = 320
+            self.camera_info_msg.height = self.camera_height
+            self.camera_info_msg.width = self.camera_width
             self.camera_info_msg.distortion_model = "plumb_rob"
+            #WARNING: this calibration has been made with 320x240 resolution (RGB565 pixel format)
+            fx_K = 416.650528
+            fy_K = 419.404643
+            cx_K = 166.124514
+            cy_K = 104.410543
+            fx_P = 421.373566
+            fy_P = 426.438812
+            cx_P = 168.731782
+            cy_P = 102.665989
+            k1_D = 0.176808
+            k2_D = -0.590488
+            p1_D = -0.008412
+            p2_D = 0.015473
+            k3_D = 0.000000
+
+            #320x320 computed from 320x240 (a newer calib may be necessary)
+            if (self.camera_height == 320) and (self.camera_width) == 320: 
+                cy_K = cy_K+40
+                cy_P = cy_P+40
+            # if image is rotated, we need to change the camera info (a newer calib may be necessary)
+            if self.camera_img_rotate_code == 0:  # no rotation
+                self.camera_info_msg.width = self.camera_width
+                self.camera_info_msg.height = self.camera_height
+
+            if self.camera_img_rotate_code == 1:  # 90 deg clockwise
+                self.camera_info_msg.height = self.camera_width
+                self.camera_info_msg.width = self.camera_height
+                
+                fx_K, fy_K = fy_K, fx_K
+                fx_P, fy_P = fy_P, fx_P
+                
+                cx_K, cy_K = self.camera_info_msg.width - cy_K, cx_K
+                cx_P, cy_P = self.camera_info_msg.width - cy_P, cx_P
+
+                p1_D, p2_D = -p2_D, p1_D
+
+            elif self.camera_img_rotate_code == 2:  # 180 deg
+                self.camera_info_msg.width = self.camera_width
+                self.camera_info_msg.height = self.camera_height
+
+                cx_K, cy_K = self.camera_info_msg.width - cx_K, self.camera_info_msg.height - cy_K
+                cx_P, cy_P = self.camera_info_msg.width - cx_P, self.camera_info_msg.height - cy_P
+
+                p1_D, p2_D = -p1_D, -p2_D
+
+            elif self.camera_img_rotate_code == 3:  # 270 deg clockwise
+                self.camera_info_msg.height = self.camera_width
+                self.camera_info_msg.width = self.camera_height
+                
+                fx_K, fy_K = fy_K, fx_K
+                fx_P, fy_P = fy_P, fx_P
+                
+                cx_K, cy_K = cy_K, self.camera_info_msg.height - cx_K
+                cx_P, cy_P = cy_P, self.camera_info_msg.height - cx_P
+
+                p1_D, p2_D = p2_D, -p1_D
+
             self.camera_info_msg.k = [
-                416.650528,
-                0.000000,
-                166.124514,
-                0.000000,
-                419.404643,
-                104.410543,
-                0.000000,
-                0.000000,
-                1.000000,
+                fx_K, 0, cx_K,
+                0, fy_K, cy_K,
+                0, 0, 1
             ]
             self.camera_info_msg.d = [
-                0.176808,
-                -0.590488,
-                -0.008412,
-                0.015473,
-                0.000000,
+                k1_D, k2_D, p1_D, p2_D, k3_D
             ]
             self.camera_info_msg.p = [
-                421.373566,
-                0.000000,
-                168.731782,
-                0.000000,
-                0.000000,
-                426.438812,
-                102.665989,
-                0.000000,
-                0.000000,
-                0.000000,
-                1.000000,
-                0.000000,
+                fx_P, 0.000000, cx_P, 0.000000,
+                0.000000, fy_P, cy_P, 0.000000,
+                0.000000, 0.000000, 1.000000, 0
             ]
             self.camera_info_pub = self.create_publisher(
                 CameraInfo, camera_info_topic, 5
@@ -298,6 +372,21 @@ class NiclaRosPublisher(Node):
                 enable_audio=self.enable_audio or self.enable_audio_stamped,
                 enable_imu=self.enable_imu,
             )
+        elif connection_type == "serial":
+            self.nicla_receiver_server = NiclaReceiverSerial(
+                port=port,
+                baudrate=baudrate,
+                enable_range=self.enable_range,
+                enable_image=self.enable_camera_raw
+                or self.enable_camera_compressed,
+                camera_receive_compressed=self.camera_receive_compressed,
+                camera_pixel_format = self.camera_pixel_format,
+                camera_width = self.camera_width,
+                camera_height = self.camera_height,
+                enable_audio=self.enable_audio or self.enable_audio_stamped,
+                enable_imu=self.enable_imu,
+            )
+
         else:
             self.get_logger().error(
                 "Connection type ", connection_type, " not known"
@@ -305,11 +394,12 @@ class NiclaRosPublisher(Node):
             raise Exception("Connection type not known")
 
         if self.enable_audio_recognition_vosk:
-            if not self.audio_recognition_model_path:
+            if not self.audio_recognition_model:
                 str_print = (
                     "Path for VOSK recognizer model is" +
                     "an empty string! Please provide " +
-                    "'audio_recognition_model_path' arg"
+                    "'audio_recognition_model_path' and " +
+                    "'audio_recognition_model_name' args"
                 )
                 self.get_logger().error(str_print)
                 exit()
@@ -317,7 +407,7 @@ class NiclaRosPublisher(Node):
             from nicla_vision_ros2_py import SpeechRecognizer
 
             self.speech_recognizer = SpeechRecognizer.SpeechRecognizer(
-                self.audio_recognition_model_path,
+                self.audio_recognition_model,
                 self.audio_recognition_grammar,
                 self.audio_recognition_listen_seconds,
                 self.audio_recognition_wave_output_filename,
@@ -352,6 +442,9 @@ class NiclaRosPublisher(Node):
                 self.camera_info_pub.publish(self.camera_info_msg)
 
                 img_raw = image[1]
+
+                if (self.camera_img_rotate_code != 0):
+                    img_raw = cv2.rotate(img_raw, self.camera_img_rotate_code-1)
 
                 # PUBLISH COMPRESSED
                 if self.enable_camera_compressed:
@@ -388,8 +481,6 @@ class NiclaRosPublisher(Node):
                         img_raw.shape[1] * 3
                     )  # Width * number of channels
 
-                    # Convert the OpenCV image to ROS Image format using
-                    # cv_bridge
                     try:
                         self.image_raw_msg.data = self.cv_bridge.cv2_to_imgmsg(
                             img_raw, encoding="bgr8"
@@ -401,8 +492,13 @@ class NiclaRosPublisher(Node):
 
         # AUDIO DATA
         if self.enable_audio or self.enable_audio_stamped:
-
             self.audio_info_pub.publish(self.audio_info_msg)
+
+        if (
+            self.enable_audio
+            or self.enable_audio_stamped
+            or self.enable_audio_recognition_vosk
+        ):
 
             if (
                 audio_data := self.nicla_receiver_server.get_audio()
