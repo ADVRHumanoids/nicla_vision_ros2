@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<launch>
+
+    <arg name="nicla_name" default="nicla" />
+    <arg name="nicla_cam_topic" default="/nicla/camera/image_raw/compressed" />
+    <arg name="nicla_cam_compressed" default="true" description="are msg from 'nicla_cam_topic' compressed images?"/>
+    <arg name="nicla_range_topic" default="/nicla/tof" />
+    <arg name="img_out_topic" default="/nicla/camera_with_tof/image_raw/compressed" />
+    
+    <node name="nicla_tof_on_image" pkg="nicla_vision_ros2" exec="tof_on_image" output="screen" respawn="false" >
+        <param name="nicla_name" value="$(var nicla_name)" />
+        <param name="nicla_cam_topic" value="$(var nicla_cam_topic)" />
+        <param name="nicla_cam_compressed" value="$(var nicla_cam_compressed)" />
+        <param name="nicla_range_topic" value="$(var nicla_range_topic)" />
+        <param name="img_out_topic" value="$(var img_out_topic)" />
+    </node>
+
+</launch>

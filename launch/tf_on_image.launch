@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<launch>
+
+    <arg name="cam_topic" default="/nicla/camera/image_raw/compressed" />
+    <arg name="cam_info_topic" default="/nicla/camera/camera_info" />
+    <arg name="cam_compressed" default="true" description="are msg from 'cam_topic' compressed images?"/>
+    <arg name ="target_frames" default="['tcp_1']"/>
+    <arg name="img_out_topic" default="/nicla/camera_with_tf/image_raw/compressed" />
+
+
+    <node name="tf_on_image" pkg="nicla_vision_ros2" exec="tf_on_image" output="screen" respawn="false" >
+        <param name="cam_topic" value="$(var cam_topic)" />
+        <param name="cam_info_topic" value="$(var cam_info_topic)" />
+        <param name="cam_compressed" value="$(var cam_compressed)" />
+        <param name="target_frames" value="$(var target_frames)" />
+        <param name="img_out_topic" value="$(var img_out_topic)" />
+    </node>
+
+</launch>

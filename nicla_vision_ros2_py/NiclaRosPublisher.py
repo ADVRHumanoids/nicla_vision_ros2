@@ -389,7 +389,7 @@ class NiclaRosPublisher(Node):
 
         else:
             self.get_logger().error(
-                "Connection type ", connection_type, " not known"
+                f'Connection type {connection_type} not known'
             )
             raise Exception("Connection type not known")
 

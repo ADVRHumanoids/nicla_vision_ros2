@@ -12,6 +12,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -61,6 +63,8 @@ ament_python_install_package(${PROJECT_NAME}_py)
 install(PROGRAMS
   scripts/nicla_receiver
   scripts/nicla_receiver_micropy
+  scripts/tf_on_image
+  scripts/tof_on_image
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright 2024 HHCM, Istituto Italiano di Tecnologia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from nicla_vision_ros2_py.NiclaReceiverServer import NiclaReceiverUDP, NiclaReceiverTCP # noqa
-from nicla_vision_ros2_py.NiclaReceiverServerSerial import NiclaReceiverSerial # noqa
-from nicla_vision_ros2_py.NiclaRosPublisher import NiclaRosPublisher # noqa
+import rclpy
+from nicla_vision_ros2_py import TFOnImage
 
-from nicla_vision_ros2_py.NiclaReceiverServerMicroPy import NiclaReceiverUDPMicroPy, NiclaReceiverTCPMicroPy  # noqa
-from nicla_vision_ros2_py.NiclaRosPublisherMicroPy import NiclaRosPublisherMicroPy # noqa
 
-from nicla_vision_ros2_py.TFOnImage import TFOnImage # noqa
-from nicla_vision_ros2_py.TofOnImage import TofOnImage # noqa
+def main(args=None):
+
+    rclpy.init(args=args)
+    tf_on_image_node = TFOnImage(rate=100)
+
+    try:
+        rclpy.spin(tf_on_image_node)
+
+    except Exception as e:
+        tf_on_image_node.get_logger().error("Exception: %s" % str(e))
+
+    tf_on_image_node.stop()
+    tf_on_image_node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
